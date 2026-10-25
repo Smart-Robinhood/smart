@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart — trade any Uniswap v4 hook pool</title>
+  <meta name="description" content="Smart is the front door for Uniswap v4 hooks on Robinhood Chain: paste any hook pool, see what its hook is allowed to do, and swap in one click through the official Universal Router.">
+  <meta property="og:title" content="Smart — trade any Uniswap v4 hook pool">
+  <meta property="og:description" content="29,000+ hooks on Robinhood Chain and almost none have a place to trade. Smart gives every hook pool a trading page.">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%230d0c12'/><circle cx='206' cy='112' r='40' fill='none' stroke='%23efeaff' stroke-width='34'/><path d='M206 156V300a96 96 0 0 0 192 0v-58' fill='none' stroke='%23ff3d9a' stroke-width='50' stroke-linecap='round'/><path d='M398 236l-46 42' fill='none' stroke='%23ff3d9a' stroke-width='40' stroke-linecap='round'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <style>
+    :root {
+      --bg: #0d0c12;
+      --bg-2: #13121a;
+      --card: #16151f;
+      --card-2: #1e1c29;
+      --line: rgba(239, 234, 255, .08);
+      --line-2: rgba(239, 234, 255, .15);
+      --text: #efeaff;
+      --muted: #9d97b3;
+      --dim: #686380;
+      --pink: #ff3d9a;
+      --pink-2: #ff8cc4;
+      --pink-soft: rgba(255, 61, 154, .12);
+      --green: #3ddc97;
+      --green-soft: rgba(61, 220, 151, .12);
+      --amber: #ffbe5c;
+      --amber-soft: rgba(255, 190, 92, .12);
+      --red: #ff5f56;
+      --red-soft: rgba(255, 95, 86, .13);
+      --display: "Space Grotesk", Inter, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(900px 520px at 80% -10%, rgba(255, 61, 154, .14), transparent 65%), radial-gradient(700px 400px at 0% 10%, rgba(120, 90, 255, .08), transparent 60%); }
+    body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-image: radial-gradient(rgba(239, 234, 255, .06) 1px, transparent 1px); background-size: 26px 26px; mask-image: linear-gradient(180deg, #000, transparent 70%); -webkit-mask-image: linear-gradient(180deg, #000, transparent 70%); }
+    a { color: inherit; }
+    h1, h2, h3, p { margin: 0; }
+    .muted { color: var(--muted); }
+    .mono { font-family: var(--mono); }
+    .note { font: 12px/1.6 var(--mono); color: var(--dim); margin-top: 14px; max-width: 900px; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+    .pk { color: var(--pink-2); }
+
+    .top { position: sticky; top: 0; z-index: 10; background: rgba(13, 12, 18, .82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+    .nav { display: flex; align-items: center; gap: 24px; height: 62px; }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 700 19px var(--display); letter-spacing: -.02em; }
+    .brand svg { width: 28px; height: 28px; }
+    .nav nav { display: flex; gap: 22px; margin-left: 12px; }
+    .nav nav a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; }
+    .nav nav a:hover { color: var(--text); }
+    .nav .right { margin-left: auto; display: flex; gap: 8px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 10px; border: 1px solid var(--line-2); background: rgba(239, 234, 255, .03); color: var(--text); font: 600 14px Inter, sans-serif; text-decoration: none; cursor: pointer; white-space: nowrap; transition: border-color .15s, background .15s, transform .15s; }
+    .btn:hover { border-color: rgba(239, 234, 255, .32); }
+    .btn.pk { background: var(--pink); border-color: var(--pink); color: #fff; }
+    .btn.pk:hover { background: #ff5aab; }
+    .btn.sm { height: 32px; padding: 0 12px; font-size: 12.5px; border-radius: 8px; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 10px; font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 0 0 rgba(255, 61, 154, .6); animation: pulse 2s infinite; display: inline-block; }
+    @keyframes pulse { 70% { box-shadow: 0 0 0 9px rgba(255, 61, 154, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 61, 154, 0); } }
+
+    .hero { padding-top: 76px; padding-bottom: 30px; max-width: 900px; }
+    h1 { font: 700 clamp(44px, 6.2vw, 80px)/.98 var(--display); letter-spacing: -.045em; margin: 22px 0 20px; }
+    h1 .dim { color: var(--dim); }
+    .lede { max-width: 640px; font-size: 18px; color: var(--muted); }
+    .search { display: flex; gap: 8px; margin-top: 28px; max-width: 720px; }
+    .search input { flex: 1; min-width: 0; height: 52px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--bg-2); color: var(--text); font: 14px var(--mono); outline: 0; }
+    .search input:focus { border-color: var(--pink); }
+    .search .btn { height: 52px; }
+    .facts { display: flex; flex-wrap: wrap; gap: 8px 28px; margin-top: 26px; font: 13px var(--mono); color: var(--muted); }
+    .facts b { color: var(--text); font-weight: 600; }
+
+    .block { padding-top: 70px; }
+    .label { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .label span { color: var(--pink-2); }
+    .label::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-2), transparent 70%); }
+    h2 { font: 700 clamp(28px, 3.8vw, 44px)/1.04 var(--display); letter-spacing: -.035em; }
+    .head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 10px 32px; margin-bottom: 22px; }
+    .head p { max-width: 480px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+
+    .risk { display: inline-block; padding: 2px 8px; border-radius: 6px; font: 700 10.5px var(--mono); letter-spacing: .05em; white-space: nowrap; }
+    .risk.high { background: var(--red-soft); color: var(--red); }
+    .risk.med { background: var(--amber-soft); color: var(--amber); }
+    .risk.low { background: var(--green-soft); color: var(--green); }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; font: 500 11px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--dim); }
+    th, td { padding: 12px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover td { background: rgba(239, 234, 255, .02); }
+    td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+    td.pair b { font-weight: 600; }
+    td.pair small { display: block; font: 12px var(--mono); color: var(--muted); }
+    .empty { padding: 26px 18px; color: var(--muted); }
+
+    /* trade view */
+    .trade { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 16px; align-items: start; }
+    .pool-info { padding: 22px; }
+    .pool-info h3 { font: 700 30px var(--display); letter-spacing: -.03em; }
+    .pool-info .sub { font: 12.5px var(--mono); color: var(--muted); margin-top: 4px; word-break: break-all; }
+    .kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
+    .kv div { background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+    .kv dt { font: 500 10.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--dim); }
+    .kv dd { margin: 4px 0 0; font: 700 18px var(--display); overflow-wrap: anywhere; }
+    .perm { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 5px; }
+    .perm li { display: flex; gap: 10px; font-size: 14px; color: var(--muted); }
+    .perm li::before { content: "•"; color: var(--dim); }
+    .perm li.hot { color: var(--text); }
+    .perm li.hot::before { content: "!"; color: var(--red); font-weight: 700; }
+    .verdict { margin-top: 14px; padding: 11px 13px; border-radius: 10px; font-size: 14px; }
+    .verdict.real { background: var(--green-soft); color: var(--green); }
+    .verdict.idle { background: var(--amber-soft); color: var(--amber); }
+    .verdict.none { background: var(--red-soft); color: var(--red); }
+
+    .swap { padding: 20px; }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; background: var(--bg-2); border-radius: 12px; border: 1px solid var(--line); }
+    .tab { height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font: 600 14px Inter, sans-serif; cursor: pointer; }
+    .tab[aria-selected="true"] { background: var(--card-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+    .tab.buy[aria-selected="true"] { color: var(--green); }
+    .tab.sell[aria-selected="true"] { color: var(--red); }
+    .field { margin-top: 14px; padding: 14px 16px; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--line); }
+    .field .top-line { display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--dim); }
+    .field .top-line button { background: none; border: 0; color: var(--pink-2); font: inherit; cursor: pointer; padding: 0; }
+    .field .amt { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+    .field input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--text); font: 600 28px var(--display); }
+    .field .tk { font: 700 15px var(--display); padding: 6px 12px; border-radius: 999px; background: var(--card-2); white-space: nowrap; }
+    .field .out { font: 600 28px var(--display); color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; }
+    .quote { margin-top: 12px; display: grid; gap: 4px; font: 12.5px var(--mono); color: var(--muted); }
+    .quote div { display: flex; justify-content: space-between; gap: 10px; }
+    .quote b { color: var(--text); font-weight: 500; }
+    .slip { display: flex; gap: 6px; }
+    .slip button { height: 24px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--line-2); background: none; color: var(--muted); font: 12px var(--mono); cursor: pointer; }
+    .slip button[aria-pressed="true"] { border-color: var(--pink); color: var(--pink-2); }
+    .swap .go { width: 100%; height: 52px; margin-top: 16px; font-size: 16px; }
+    .swap .msg { margin-top: 10px; font-size: 13px; color: var(--muted); min-height: 20px; }
+    .swap .msg.err { color: var(--red); }
+    .swap .msg.ok { color: var(--green); }
+    .share { display: flex; gap: 8px; margin-top: 14px; }
+
+    /* featured + projects */
+    .featured { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .slot { display: flex; flex-direction: column; min-height: 170px; padding: 20px; border-radius: 16px; border: 1px solid var(--line-2); background: var(--card); text-decoration: none; }
+    .slot.paid { border-color: rgba(255, 61, 154, .45); background: radial-gradient(120% 100% at 0% 0%, rgba(255, 61, 154, .12), transparent 60%), var(--card); }
+    .slot.open { border-style: dashed; background: transparent; }
+    .slot .rank { font: 700 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--pink-2); }
+    .slot.open .rank { color: var(--dim); }
+    .slot .sym { font: 700 26px var(--display); letter-spacing: -.02em; margin-top: 10px; overflow-wrap: anywhere; }
+    .slot.open .sym { color: var(--dim); font-size: 20px; }
+    .slot p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+    .slot .meta { margin-top: auto; padding-top: 12px; font: 12px var(--mono); color: var(--muted); }
+    .builders { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .builders article { padding: 22px; border-radius: 16px; border: 1px solid var(--line); background: var(--card); }
+    .builders h3 { font: 700 19px var(--display); margin-bottom: 6px; }
+    .builders p { color: var(--muted); font-size: 14px; }
+    .builders code { font: 12.5px var(--mono); color: var(--pink-2); word-break: break-all; }
+
+    .token-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 14px; }
+    .token-card { padding: 26px; background: radial-gradient(100% 120% at 0% 0%, rgba(255, 61, 154, .12), transparent 60%), var(--card); border-color: var(--line-2); }
+    .token-status { font: 700 22px var(--display); }
+    .ca { margin-top: 12px; font: 13px var(--mono); color: var(--muted); overflow-wrap: anywhere; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .terms { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .terms div { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; }
+    .terms div:first-child { grid-column: 1 / -1; }
+    .terms dt { font: 500 11px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--dim); }
+    .terms dd { margin: 4px 0 0; font-weight: 500; }
+    .terms div:first-child dd { font: 700 28px var(--display); }
+    .phases { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .phases li { padding: 24px; border-radius: 16px; border: 1px solid var(--line); background: var(--card); }
+    .phases li.now { border-color: rgba(255, 61, 154, .45); }
+    .phases span { font: 500 11px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--dim); }
+    .phases .now span { color: var(--pink-2); }
+    .phases h3 { font: 700 24px var(--display); margin: 8px 0; letter-spacing: -.02em; }
+    .phases p { color: var(--muted); font-size: 14px; }
+    .faq { max-width: 860px; border-top: 1px solid var(--line-2); }
+    .faq details { border-bottom: 1px solid var(--line-2); padding: 20px 0; }
+    .faq summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; font: 600 17px Inter, sans-serif; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; color: var(--muted); font: 400 22px/1 var(--mono); }
+    .faq details[open] summary::after { content: "−"; }
+    .faq details p { margin-top: 10px; color: var(--muted); max-width: 720px; }
+    footer { border-top: 1px solid var(--line); margin-top: 80px; }
+    footer .wrap { display: grid; gap: 8px; padding-top: 32px; padding-bottom: 44px; font-size: 13px; color: var(--dim); }
+    footer .brand { color: var(--text); font-size: 17px; }
+    .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 12px 18px; border-radius: 10px; font: 600 13px Inter, sans-serif; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; max-width: calc(100% - 32px); text-align: center; }
+    .toast.on { opacity: 1; }
+
+    @media (max-width: 1000px) {
+      .trade, .token-grid, .phases, .featured, .builders { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 820px) { .nav nav { display: none; } }
+    @media (max-width: 640px) {
+      .wrap { padding-left: 16px; padding-right: 16px; }
+      .hero { padding-top: 36px; }
+      .search { flex-direction: column; }
+      .kv { grid-template-columns: 1fr 1fr; }
+      .terms { grid-template-columns: 1fr; }
+      th, td { padding: 11px 12px; }
+    }
+
+    /* ---- pages ---- */
+    .page { display: none; }
+    .page.on { display: block; }
+    .nav nav a.on { color: var(--text); }
+    .nav nav a.on::after { content: ""; display: block; height: 2px; margin-top: 4px; border-radius: 2px; background: var(--pink); }
+    .burger { display: none; }
+    .pagehead { padding-top: 64px; padding-bottom: 30px; max-width: 920px; }
+    .pagehead h1 { margin-bottom: 16px; }
+    .burnboard { padding: 22px; background: radial-gradient(120% 140% at 100% 0%, rgba(255, 61, 154, .14), transparent 55%), var(--card); border-color: var(--line-2); }
+    .bb-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .bb-src { font: 12px var(--mono); color: var(--dim); }
+    .bb-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
+    .bb-grid div { background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+    .bb-grid dt { font: 500 10.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--dim); }
+    .bb-grid dd { margin: 6px 0 2px; font: 700 26px var(--display); letter-spacing: -.02em; overflow-wrap: anywhere; }
+    .bb-grid div:first-child dd { color: var(--pink-2); }
+    .bb-grid small { font: 12px var(--mono); color: var(--muted); }
+    .bb-foot { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13.5px; }
+    .flowcard { padding: 24px; margin-top: 16px; }
+    .flowcard h3 { font: 700 22px var(--display); letter-spacing: -.02em; }
+    .flow { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; counter-reset: f; }
+    .flow li { position: relative; padding: 16px; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--line); counter-increment: f; }
+    .flow li::before { content: "0" counter(f); font: 600 11px var(--mono); color: var(--pink-2); }
+    .flow b { display: block; font: 700 16px var(--display); margin: 6px 0 4px; }
+    .flow span { color: var(--muted); font-size: 13.5px; }
+    .note a, .doc a, .log a, .callout a { color: var(--pink-2); }
+    .road { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .ph { padding: 22px; border-radius: 16px; border: 1px solid var(--line); background: var(--card); }
+    .ph.now { border-color: rgba(255, 61, 154, .5); background: radial-gradient(120% 100% at 0% 0%, rgba(255, 61, 154, .12), transparent 60%), var(--card); }
+    .ph.done { border-color: rgba(61, 220, 151, .35); }
+    .ph-tag { font: 500 11px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--dim); }
+    .ph.now .ph-tag { color: var(--pink-2); }
+    .ph.done .ph-tag { color: var(--green); }
+    .ph h3 { font: 700 26px var(--display); letter-spacing: -.02em; margin: 8px 0 10px; }
+    .ph ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .ph li { display: flex; gap: 10px; color: var(--muted); font-size: 14px; }
+    .ph li::before { content: "○"; color: var(--dim); }
+    .ph li.ok { color: var(--text); }
+    .ph li.ok::before { content: "✓"; color: var(--green); }
+    .log { display: grid; gap: 10px; max-width: 820px; }
+    .log .card { padding: 20px 22px; }
+    .log b { font: 700 18px var(--display); }
+    .log small { margin-left: 10px; font: 12px var(--mono); color: var(--dim); }
+    .log p { color: var(--muted); margin-top: 6px; font-size: 14.5px; }
+    .docs { display: grid; grid-template-columns: 230px minmax(0, 1fr) 190px; gap: 32px; padding-top: 40px; align-items: start; }
+    .sidebar, .toc { position: sticky; top: 86px; max-height: calc(100vh - 110px); overflow-y: auto; }
+    .sidebar b { display: block; font: 500 11px var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--dim); margin: 20px 0 6px 10px; }
+    .sidebar b:first-child { margin-top: 0; }
+    .sidebar a, .toc a { display: block; padding: 6px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .sidebar a:hover, .toc a:hover { color: var(--text); background: rgba(239, 234, 255, .04); }
+    .sidebar a.on { color: var(--text); background: var(--pink-soft); box-shadow: inset 2px 0 0 var(--pink); }
+    .toc p { font: 500 11px var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--dim); margin: 0 0 6px 10px; }
+    .toc a { font-size: 13px; padding: 4px 10px; }
+    .doc { min-width: 0; padding: 34px 38px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; }
+    .crumbs { font: 12px var(--mono); color: var(--dim); }
+    .crumbs a { color: var(--dim); text-decoration: none; }
+    .doc h1 { font: 700 40px/1.05 var(--display); letter-spacing: -.035em; margin: 10px 0 18px; }
+    .doc h2 { font: 700 22px var(--display); letter-spacing: -.02em; margin: 30px 0 8px; scroll-margin-top: 86px; }
+    .doc p, .doc li { color: var(--muted); font-size: 15.5px; }
+    .doc p + p { margin-top: 10px; }
+    .doc b { color: var(--text); font-weight: 600; }
+    .doc ul { padding-left: 20px; margin: 10px 0; }
+    .doc li { margin: 7px 0; }
+    .doc code { font: 13px var(--mono); color: var(--pink-2); background: var(--bg-2); padding: 1px 6px; border-radius: 5px; overflow-wrap: anywhere; }
+    .doc .code { margin: 14px 0; padding: 16px 18px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line-2); font: 13px/1.8 var(--mono); color: var(--text); white-space: pre; overflow-x: auto; }
+    .doc table td { white-space: normal; }
+    .doc table td code { white-space: nowrap; }
+    .callout { margin-top: 20px; padding: 14px 16px; border-radius: 12px; background: var(--pink-soft); border: 1px solid rgba(255, 61, 154, .3); color: var(--text); font-size: 14.5px; }
+    .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--line); }
+    .pager a { display: block; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line-2); text-decoration: none; color: var(--text); }
+    .pager a:hover { border-color: var(--pink); }
+    .pager small { display: block; font: 11px var(--mono); color: var(--dim); }
+    .pager b { font: 700 16px var(--display); }
+    .pager .nx { grid-column: 2; text-align: right; }
+    .foot-links { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 6px 0 4px; }
+    .foot-links a { color: var(--muted); text-decoration: none; font-size: 13.5px; }
+    .foot-links a:hover { color: var(--text); }
+    @media (max-width: 1100px) { .docs { grid-template-columns: 210px minmax(0, 1fr); } .toc { display: none; } .road { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 820px) {
+      .burger { display: inline-flex; }
+      .nav nav.open { display: flex; position: absolute; top: 62px; left: 0; right: 0; flex-direction: column; gap: 0; margin: 0; padding: 8px 16px 14px; background: var(--bg-2); border-bottom: 1px solid var(--line-2); }
+      .nav nav.open a { padding: 12px 4px; font-size: 15px; }
+      .nav nav.open a.on::after { display: none; }
+      .bb-grid, .flow { grid-template-columns: 1fr 1fr; }
+      .docs { grid-template-columns: 1fr; padding-top: 24px; }
+      .sidebar { position: static; max-height: none; display: flex; flex-wrap: wrap; gap: 2px; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+      .sidebar b { width: 100%; margin: 8px 0 2px 6px; }
+      .doc { padding: 24px 18px; }
+    }
+    @media (max-width: 640px) { .road, .bb-grid, .flow { grid-template-columns: 1fr; } .pagehead { padding-top: 36px; } .doc h1 { font-size: 32px; } .nav .right #nav-cta { display: none; } }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap nav">
+      <a class="brand" href="#/"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#16151f" stroke="rgba(239,234,255,.15)" stroke-width="10"/><circle cx="206" cy="112" r="40" fill="none" stroke="#efeaff" stroke-width="34"/><path d="M206 156V300a96 96 0 0 0 192 0v-58" fill="none" stroke="#ff3d9a" stroke-width="50" stroke-linecap="round"/><path d="M398 236l-46 42" fill="none" stroke="#ff3d9a" stroke-width="40" stroke-linecap="round"/></svg>Smart</a>
+      <nav id="menu">
+        <a href="#/" data-nav="home">Trade</a>
+        <a href="#/token" data-nav="token">Token &amp; burns</a>
+        <a href="#/docs/introduction" data-nav="docs">Docs</a>
+        <a href="#/roadmap" data-nav="roadmap">Roadmap</a>
+      </nav>
+      <div class="right"><button class="btn sm burger" id="burger" aria-label="Menu">☰</button><button class="btn sm" id="connect">Connect wallet</button><a class="btn sm pk" id="nav-cta" href="#pools">Trade a hook</a></div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="page" data-page="home">
+    <section class="wrap hero">
+      <p class="eyebrow"><span class="pulse"></span>Uniswap v4 · Robinhood Chain</p>
+      <h1>Trade any <span class="pk">hook pool.</span><br><span class="dim">In one click.</span></h1>
+      <p class="lede"><span id="h-hooks">29,000+</span> Uniswap v4 hooks live on Robinhood Chain, and almost none of them have a place to trade. Smart is the front door: paste any hook pool, see exactly what its hook is allowed to do, and swap through the official Uniswap router from your own wallet.</p>
+      <form class="search" id="search">
+        <input id="search-in" placeholder="Pool id, hook address or token address" spellcheck="false" autocomplete="off" aria-label="Pool, hook or token">
+        <button class="btn pk" type="submit">Open pool</button>
+      </form>
+      <p class="facts"><span>Hooks <b id="f-hooks">—</b></span><span>Hook pools trading now <b id="f-pools">—</b></span><span>Swaps · 10m <b id="f-live">—</b></span><span>Through hooks <b id="f-share">—</b></span></p>
+    </section>
+
+    <section class="wrap block" id="pools">
+      <p class="label"><span>01</span>Hook pools</p>
+      <div class="head">
+        <h2>Hook pools trading right now</h2>
+        <p class="muted">ETH-paired Uniswap v4 pools with a hook, ranked by swaps in the last ~10 minutes. Open one to see the hook and trade.</p>
+      </div>
+      <div class="card"><div class="table-wrap" id="pool-list"><p class="empty">Reading the chain…</p></div></div>
+    </section>
+
+    <section class="wrap block" id="trade">
+      <p class="label"><span>02</span>Trade</p>
+      <div class="trade">
+        <div class="card pool-info" id="pool-info"><p class="muted">Pick a pool above or paste one in the search box.</p></div>
+        <div class="card swap">
+          <div class="tabs" role="tablist"><button class="tab buy" id="tab-buy" aria-selected="true">Buy</button><button class="tab sell" id="tab-sell" aria-selected="false">Sell</button></div>
+          <div class="field">
+            <div class="top-line"><span>You pay</span><span id="bal-in">Balance —</span></div>
+            <div class="amt"><input id="amount" inputmode="decimal" placeholder="0.0" autocomplete="off"><span class="tk" id="tk-in">ETH</span></div>
+          </div>
+          <div class="field">
+            <div class="top-line"><span>You receive (estimate)</span><span id="bal-out">Balance —</span></div>
+            <div class="amt"><span class="out" id="out">0.0</span><span class="tk" id="tk-out">—</span></div>
+          </div>
+          <div class="quote">
+            <div><span>Price</span><b id="q-price">—</b></div>
+            <div><span>Minimum received</span><b id="q-min">—</b></div>
+            <div><span>Smart fee</span><b id="q-fee">—</b></div>
+            <div><span>Slippage</span><span class="slip" id="slip"><button data-s="1">1%</button><button data-s="3">3%</button><button data-s="5" aria-pressed="true">5%</button><button data-s="10">10%</button></span></div>
+          </div>
+          <button class="btn pk go" id="go" disabled>Select a pool</button>
+          <p class="msg" id="msg"></p>
+          <div class="share" id="share"></div>
+        </div>
+      </div>
+      <p class="note">Swaps go straight from your wallet to the official Uniswap Universal Router (0x8876…0904). Smart never holds your funds. Every swap is simulated before your wallet asks you to sign. The estimate assumes the pool's current price and liquidity; hooks can change the final amount, which the minimum protects you against.</p>
+    </section>
+
+    <section class="wrap block" id="featured">
+      <p class="label"><span>03</span>Featured</p>
+      <div class="head">
+        <h2>Featured hook projects</h2>
+        <p class="muted">Paid for by burning $SMART. Featured is advertising: the data shown for every pool and hook stays exactly the same.</p>
+      </div>
+      <div class="featured" id="featured-list"></div>
+    </section>
+
+    <section class="wrap block" id="builders">
+      <p class="label"><span>04</span>For hook teams</p>
+      <div class="head">
+        <h2>Your hook deserves a front door</h2>
+        <p class="muted">Deployed a hook and launched a token about it? Give people a place to actually use it.</p>
+      </div>
+      <div class="builders">
+        <article><h3>Share your pool link</h3><p>Every pool gets a page. Put it in your bio and your posts:</p><p><code id="link-example">smart/?pool=0x…</code></p></article>
+        <article><h3>Show what your hook does</h3><p>Permissions are decoded straight from your hook address, with live swaps. Real usage is the best marketing a hook can have.</p></article>
+        <article><h3>Get featured</h3><p>Burn <span class="min-burn">100,000</span> $SMART from your project's dev wallet to sit at the top of Smart for <span class="boost-hours">6</span> hours.</p></article>
+      </div>
+    </section>
+
+    <section class="wrap block" id="buyback">
+      <p class="label"><span>05</span>$<span class="tkr">SMART</span></p>
+      <div class="card burnboard teaser">
+        <div><h2>Every swap buys back $<span class="tkr">SMART</span>.</h2><p class="muted" style="margin-top:10px;max-width:560px">0.25% of each swap through Smart goes to an on-chain contract that can only buy $<span class="tkr">SMART</span> and burn it. No owner, no withdraw.</p></div>
+        <div class="row" style="margin-top:18px"><a class="btn pk" href="#/token">See the burns</a><a class="btn" href="#/docs/buyback-contract">How it works</a></div>
+      </div>
+    </section>
+    </section>
+
+    <!-- ================= TOKEN ================= -->
+    <section class="page" data-page="token">
+      <div class="wrap pagehead">
+        <p class="eyebrow"><span class="pulse"></span>Every swap buys back $<span class="tkr">SMART</span></p>
+        <h1>$<span class="tkr">SMART</span></h1>
+        <p class="lede">0.25% of every swap through Smart is paid in ETH, inside the same transaction, and used for one thing only: buying $<span class="tkr">SMART</span> and burning it.</p>
+      </div>
+      <div class="wrap">
+        <div class="burnboard card">
+          <div class="bb-head"><span class="label" style="margin:0"><span>LIVE</span>Buyback &amp; burn</span><span class="bb-src" id="bb-src">Reading the chain…</span></div>
+          <div class="bb-grid">
+            <div><dt>$<span class="tkr">SMART</span> burned (all time)</dt><dd id="bb-dead">—</dd><small id="bb-dead-pct">&nbsp;</small></div>
+            <div><dt id="bb-l2">Burned by buybacks</dt><dd id="bb-burned">—</dd><small id="bb-buys">&nbsp;</small></div>
+            <div><dt id="bb-l3">ETH spent on buybacks</dt><dd id="bb-eth">—</dd><small>from swap fees</small></div>
+            <div><dt>Waiting for the next buyback</dt><dd id="bb-pending">—</dd><small id="bb-next">&nbsp;</small></div>
+          </div>
+          <div class="bb-foot"><button class="btn pk" id="bb-go" disabled>Burn now</button><span class="muted" id="bb-note">Anyone can trigger a buyback once enough ETH is waiting. It also happens automatically inside swaps.</span></div>
+        </div>
+        <div class="token-grid" style="margin-top:16px">
+          <div class="card token-card">
+            <p class="token-status" id="token-status">Launching soon on Pons</p>
+            <div class="ca" id="ca">Contract address will appear here at launch. Until then, any token using this name is not ours.</div>
+            <div class="row" id="token-links"></div>
+          </div>
+          <dl class="terms">
+            <div><dt>Supply</dt><dd>1,000,000,000</dd></div>
+            <div><dt>Swap fee</dt><dd><span class="fee-pct">0.25%</span> of every swap through Smart buys back and burns $<span class="tkr">SMART</span></dd></div>
+            <div><dt>Featured slots</dt><dd>Paid only by burning $<span class="tkr">SMART</span></dd></div>
+            <div><dt>Launch</dt><dd>Fair launch on Pons</dd></div>
+            <div><dt>Team</dt><dd>No team mint, no presale</dd></div>
+          </dl>
+        </div>
+        <div class="flowcard card">
+          <h3>How a fee becomes a burn</h3>
+          <ol class="flow">
+            <li><b>You swap on Smart</b><span>Your wallet sends the swap to the official Uniswap router.</span></li>
+            <li><b>0.25% in ETH</b><span>The router pays the fee to the Smart buyback contract in the same transaction.</span></li>
+            <li><b>Contract buys $<span class="tkr">SMART</span></b><span>On the Pons curve now, in the Uniswap v4 pool after graduation.</span></li>
+            <li><b>Sent to 0x…dEaD</b><span>Bought tokens go straight to the burn address. Forever.</span></li>
+          </ol>
+          <p class="note">The buyback contract has no owner and no withdraw function: its ETH can only buy and burn $SMART. <a href="#/docs/buyback-contract">How it works</a> · $SMART gives no claim on any asset or revenue.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ROADMAP ================= -->
+    <section class="page" data-page="roadmap">
+      <div class="wrap pagehead">
+        <p class="eyebrow">Roadmap</p>
+        <h1>The front door,<br><span class="dim">then the whole house.</span></h1>
+        <p class="lede">Smart ships in small, working steps. Every phase is something you can use, not a promise.</p>
+      </div>
+      <div class="wrap road">
+        <article class="ph done"><span class="ph-tag">Phase 1 · Live</span><h3>Trade</h3><ul><li class="ok">Trading page for every ETH-paired v4 hook pool</li><li class="ok">Hook permissions decoded from the address</li><li class="ok">Live swaps, risk labels and verdicts</li><li class="ok">One-click swaps through the Universal Router</li><li class="ok">Simulation before every signature</li><li class="ok">Featured slots paid in burned $<span class="tkr">SMART</span></li></ul></article>
+        <article class="ph now"><span class="ph-tag">Phase 2 · Now</span><h3>Buyback</h3><ul><li class="ok">0.25% swap fee, live on-chain</li><li class="ok">Buyback &amp; burn contract: no owner, no withdraw</li><li class="ok">Live burn tracker on the Token page</li><li>Automatic buybacks inside swaps</li><li>Verified contract source on Blockscout</li></ul></article>
+        <article class="ph"><span class="ph-tag">Phase 3 · Next</span><h3>Launch</h3><ul><li>Create a pool for any hook in one flow</li><li>Add liquidity from the pool page</li><li>Pools paired with USDG and stock tokens</li><li>Price charts on every pool page</li></ul></article>
+        <article class="ph"><span class="ph-tag">Phase 4 · Later</span><h3>SmartHook</h3><ul><li>Our own v4 hook</li><li>Higher fees for bots and snipers, lower for people</li><li>Part of every hook fee buys back $<span class="tkr">SMART</span></li><li>Hook analytics API for teams</li></ul></article>
+      </div>
+    </section>
+
+    <!-- ================= CHANGELOG ================= -->
+    <section class="page" data-page="changelog">
+      <div class="wrap pagehead"><p class="eyebrow">Changelog</p><h1>What shipped</h1></div>
+      <div class="wrap log">
+        <article class="card"><b>v0.4 · Multi-page site &amp; buyback contract</b><small>Oct 2026</small><p>Token page with a live burn tracker, full documentation, roadmap, and the on-chain buyback &amp; burn contract for swap fees.</p></article>
+        <article class="card"><b>v0.3 · Swap fee live</b><small>Oct 2026</small><p>0.25% of every swap is paid in ETH to the Smart treasury inside the swap transaction. <a href="https://robinhoodchain.blockscout.com/tx/0x7f40dcb504a8287dd3b06c87ad8a2d2bc1f0ff118bccd915efb20fcd725247c1" target="_blank" rel="noopener">First fee tx ↗</a></p></article>
+        <article class="card"><b>v0.2 · Trade any hook pool</b><small>Oct 2026</small><p>Buy and sell in any ETH-paired Uniswap v4 pool through the official Universal Router, with simulation, slippage protection and shareable pool links.</p></article>
+        <article class="card"><b>v0.1 · Hook scanner</b><small>Oct 2026</small><p>Every v4 hook on Robinhood Chain indexed, with decoded permissions and live usage.</p></article>
+      </div>
+    </section>
+
+    <!-- ================= DOCS ================= -->
+    <section class="page" data-page="docs">
+      <div class="wrap docs">
+        <aside class="sidebar" id="sidebar"></aside>
+        <article class="doc">
+          <div class="crumbs" id="crumbs"></div>
+          <div id="doc-body"></div>
+          <div class="pager" id="pager"></div>
+        </article>
+        <aside class="toc" id="toc"></aside>
+      </div>
+      <div hidden id="doc-src">
+        <section data-slug="introduction" data-group="Getting started" data-title="Introduction">
+          <p>Smart is the front door for Uniswap v4 hooks on Robinhood Chain. There are <b><span class="d-hooks">29,000+</span> hooks</b> deployed on the chain, and almost none of them have a place where people can actually trade their pools. Smart gives every hook pool a trading page.</p>
+          <h2>What you can do</h2>
+          <ul><li>See which hook pools are trading <b>right now</b>, ranked by live swaps.</li><li>Open any pool by token address, pool id or hook address.</li><li>Read exactly what the pool's hook is allowed to do, decoded from its address.</li><li>Buy or sell in one click, from your own wallet, through the official Uniswap Universal Router.</li><li>Share a direct link to any pool.</li></ul>
+          <h2>How it's built</h2>
+          <p>Smart is a single web page. It reads the chain directly and builds standard Uniswap transactions in your browser. There is no Smart server between you and the chain, and no Smart contract ever holds your funds.</p>
+          <div class="callout">New here? Start with <a href="#/docs/trading">Trading</a>, then read <a href="#/docs/hook-permissions">Hook permissions</a> before you trade an unknown hook.</div>
+        </section>
+        <section data-slug="trading" data-group="Getting started" data-title="Trading">
+          <h2>Find a pool</h2><p>Pick one from <b>Hook pools trading right now</b> on the home page, or paste a token address, pool id or hook address into the search box. For a token, Smart looks up its ETH pool on-chain.</p>
+          <h2>Buy or sell</h2><p>Choose Buy (ETH → token) or Sell (token → ETH), enter an amount and check the estimate. The <b>minimum received</b> is the estimate minus your slippage setting.</p>
+          <h2>Before you sign</h2><p>Every swap is simulated against the live chain first. If it would fail, or a hook would take more than your slippage allows, you see the reason and nothing is sent.</p>
+          <h2>Fees</h2><p>Smart charges <span class="fee-pct">0.25%</span>, shown in the quote before you swap. The pool's own fee and the hook's behaviour come on top, as on any Uniswap interface. See <a href="#/docs/swap-fee">Swap fee</a>.</p>
+        </section>
+        <section data-slug="selling-approvals" data-group="Getting started" data-title="Selling & approvals">
+          <p>Uniswap's router moves tokens through <b>Permit2</b>. The first time you sell a token, your wallet asks for two standard approvals:</p>
+          <ul><li><b>Token → Permit2:</b> lets Permit2 move this token for you.</li><li><b>Permit2 → Universal Router:</b> lets the router use that permission. It expires after 30 days.</li></ul>
+          <p>After that, selling the same token is a single transaction. ETH never needs an approval.</p>
+        </section>
+        <section data-slug="pool-pages" data-group="Getting started" data-title="Pool pages">
+          <p>Every pool page shows the price, recent swaps, the hook's permissions, a risk label and a verdict.</p>
+          <h2>Risk labels</h2>
+          <ul><li><b>High · can change swap amounts:</b> the hook may change what you pay or receive in a swap.</li><li><b>High · can change LP amounts:</b> the hook may change what liquidity providers deposit or get back.</li><li><b>Medium · can gate withdrawals:</b> the hook decides whether liquidity can be removed.</li><li><b>Medium · runs on swaps:</b> the hook runs code before or after every swap and may set the fee.</li><li><b>Low:</b> none of the above.</li></ul>
+          <h2>Verdict</h2><p><b>Real hook</b> means at least 50 swaps across the hook's pools in the last 6 hours, or 5+ swaps in this pool in the last ~10 minutes. Otherwise the hook is marked <b>barely used</b>. A hook nobody trades is a warning sign on its own.</p>
+          <h2>Share links</h2><p>Every pool has a link: <code>smartrobin.xyz/?pool=0x…</code>. Hook teams can put it in their bio.</p>
+        </section>
+        <section data-slug="hook-permissions" data-group="Getting started" data-title="Hook permissions">
+          <p>In Uniswap v4, what a hook may do is written into the last 14 bits of its address. Smart decodes them for every pool. Permissions marked <b>!</b> can affect your money directly.</p>
+          <div class="table-wrap"><table id="doc-perms"></table></div>
+          <p>A permission says what a hook <i>can</i> do, not what it <i>does</i>. A hook with return-delta rights may be perfectly fair, or may not. Check its swaps and its team.</p>
+        </section>
+        <section data-slug="smart-token" data-group="$SMART" data-title="The $SMART token">
+          <p>$<span class="tkr">SMART</span> launched fairly on Pons, Robinhood Chain: 1,000,000,000 supply, no team mint, no presale.</p>
+          <h2>What gives it a reason to exist</h2>
+          <ul><li><b>Swap fees buy it back.</b> 0.25% of every swap through Smart buys $<span class="tkr">SMART</span> and burns it. More hook trading means more buybacks.</li><li><b>Featured slots burn it.</b> Hook projects burn $<span class="tkr">SMART</span> to be featured at the top of Smart.</li></ul>
+          <p>Both only reduce supply. Track every burn live on the <a href="#/token">Token page</a>.</p>
+        </section>
+        <section data-slug="swap-fee" data-group="$SMART" data-title="Swap fee">
+          <p>Smart takes <span class="fee-pct">0.25%</span> of each swap, in ETH, inside the same transaction as your swap. It's never charged separately.</p>
+          <ul><li><b>Buys:</b> the router first sends 0.25% of your ETH to the fee recipient (command <code>TRANSFER</code>), then swaps the rest.</li><li><b>Sells:</b> the router swaps your tokens to ETH, pays 0.25% of the ETH to the fee recipient (command <code>PAY_PORTION</code>), then sends the rest to you.</li></ul>
+          <p>The fee recipient is the <a href="#/docs/buyback-contract">buyback contract</a>. You can see the fee as its own line in every swap transaction on the explorer. <a href="https://robinhoodchain.blockscout.com/tx/0x7f40dcb504a8287dd3b06c87ad8a2d2bc1f0ff118bccd915efb20fcd725247c1" target="_blank" rel="noopener">Example ↗</a></p>
+        </section>
+        <section data-slug="buyback-contract" data-group="$SMART" data-title="Buyback contract">
+          <p>Swap fees are paid to the <b>SmartBuyback</b> contract. Its ETH can do exactly one thing: buy $<span class="tkr">SMART</span> and send it to <code>0x000000000000000000000000000000000000dEaD</code>.</p>
+          <h2>Rules written in the code</h2>
+          <ul><li><b>No owner.</b> Nobody can change it, pause it or upgrade it.</li><li><b>No withdraw.</b> There is no function that sends ETH anywhere except into a buy.</li><li><b>Automatic.</b> When a fee arrives and at least <b>0.001 ETH</b> is waiting, the contract buys and burns right inside that swap.</li><li><b>Anyone can trigger it.</b> <code>buyback()</code> is public; the Token page has a <b>Burn now</b> button.</li><li><b>Capped.</b> One buyback spends at most <b>0.5 ETH</b>, so big balances are burned in steps.</li></ul>
+          <h2>Where it buys</h2>
+          <p>While $<span class="tkr">SMART</span> is on its Pons bonding curve, the contract buys on the curve and names the burn address as the recipient. After graduation the curve refuses, and the contract buys in the Uniswap v4 pool Pons creates (ETH / $<span class="tkr">SMART</span>, Pons graduation hook), then sends the tokens to the burn address.</p>
+          <h2>Public counters</h2>
+          <div class="code">totalBurned()   $SMART burned by buybacks
+totalEthSpent() ETH spent on buybacks
+buybacks()      number of buybacks
+pending()       ETH waiting for the next one</div>
+          <p>Every buyback emits a <code>Buyback(caller, ethSpent, burned, onCurve)</code> event. The Token page reads these numbers live.</p>
+          <h2>Tested</h2><p>The contract was simulated against live Robinhood Chain state: buying on the $<span class="tkr">SMART</span> curve, buying through a graduated Pons token's v4 pool, the minimum and the cap, a real Smart swap paying its fee into the contract, and small fees waiting for the next buyback.</p>
+          <p id="doc-bb-addr"></p>
+        </section>
+        <section data-slug="featured" data-group="$SMART" data-title="Featured slots">
+          <p>The three featured slots at the top of Smart are paid for only by burning $<span class="tkr">SMART</span>.</p>
+          <ul><li>Burn at least <b><span class="min-burn">100,000</span> $<span class="tkr">SMART</span></b> from your token's creator wallet to the burn address.</li><li>Your project is featured for <b><span class="boost-hours">6</span> hours</b>. The biggest burns take the top slots.</li><li>Featured is advertising. The data shown for your pool and hook stays exactly the same as for everyone else.</li></ul>
+        </section>
+        <section data-slug="contracts" data-group="$SMART" data-title="Contracts & addresses">
+          <div class="table-wrap"><table id="doc-contracts"></table></div>
+          <p>Network: Robinhood Chain, chain id 4663. Explorer: <a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noopener">robinhoodchain.blockscout.com</a>.</p>
+        </section>
+        <section data-slug="for-hook-teams" data-group="Hook teams" data-title="For hook teams">
+          <p>You deployed a hook and launched a token about it. Smart gives people a place to use it.</p>
+          <ul><li><b>Link your pool.</b> Put <code>smartrobin.xyz/?pool=0x…</code> in your bio and posts. Visitors land on a page where they can trade.</li><li><b>Show real usage.</b> Your hook's permissions and live swaps are on the page. Real activity is the best marketing a hook can have.</li><li><b>Get featured.</b> Burn $<span class="tkr">SMART</span> for a top slot. See <a href="#/docs/featured">Featured slots</a>.</li></ul>
+        </section>
+        <section data-slug="safety" data-group="Trust" data-title="Safety">
+          <ul><li><b>Your wallet, the official router.</b> Swaps go from your wallet to the Uniswap Universal Router (<code>0x8876…0904</code>). Smart never holds your funds.</li><li><b>Simulation first.</b> Every transaction is simulated against the live chain before your wallet asks you to sign.</li><li><b>Minimum amount.</b> Every swap carries a minimum. If a hook takes more than your slippage allows, the swap reverts instead of filling badly.</li><li><b>Standard approvals only.</b> Selling uses Uniswap's Permit2 approvals, nothing custom.</li></ul>
+        </section>
+        <section data-slug="risks" data-group="Trust" data-title="Risks">
+          <ul><li><b>Hooks are code written by strangers.</b> A hook with return-delta permissions can change what you receive. Read the permissions.</li><li><b>Hook tokens are highly volatile</b> and many go to zero.</li><li><b>Estimates can differ</b> from the final amount when a hook changes the swap. The minimum protects you.</li><li><b>Buybacks have no price limit.</b> Robinhood Chain has no public mempool, which makes front-running hard, and each buyback is capped at 0.5 ETH to limit any loss.</li><li>$<span class="tkr">SMART</span> gives no claim on any asset or revenue.</li></ul>
+        </section>
+        <section data-slug="faq" data-group="Trust" data-title="FAQ">
+          <h2>Is it safe to swap through Smart?</h2><p>Your wallet sends the swap to the official Uniswap Universal Router; funds never pass through a Smart contract. Every swap is simulated first and carries a minimum. The hook itself is the real risk: check its permissions on the pool page.</p>
+          <h2>What does Smart charge?</h2><p><span class="fee-pct">0.25%</span> of each swap in ETH, in the same transaction. All of it buys back and burns $<span class="tkr">SMART</span>.</p>
+          <h2>Why does selling need two approvals?</h2><p>Uniswap's router pulls tokens through Permit2: one approval for the token, one for the router. Only the first time per token.</p>
+          <h2>Which pools can I trade?</h2><p>Any Uniswap v4 pool on Robinhood Chain paired with ETH. USDG and stock-token pairs are on the <a href="#/roadmap">roadmap</a>.</p>
+          <h2>Who can take the buyback ETH?</h2><p>Nobody. The buyback contract has no owner and no withdraw function.</p>
+          <h2>Is this investment advice?</h2><p>No. Smart shows public on-chain data and gives you a way to trade; the decision is yours.</p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="brand">Smart</span>
+      <div class="foot-links"><a href="#/">Trade</a><a href="#/token">Token &amp; burns</a><a href="#/docs/introduction">Docs</a><a href="#/docs/contracts">Contracts</a><a href="#/roadmap">Roadmap</a><a href="#/changelog">Changelog</a><a href="https://x.com/smartonrobin" target="_blank" rel="noopener">X</a></div>
+      <p>Smart is an independent interface for Uniswap v4 pools on Robinhood Chain. Not affiliated with Uniswap Labs, Robinhood, Pons or any project shown. Featured slots are paid advertising. Nothing here is investment advice.</p>
+    </div>
+  </footer>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ===== Settings: fill these in and re-upload this one file =====
+    const CONFIG = {
+      ticker: 'SMART',
+      contract: '0x0b78f8903265d93c0c156fba5c589b2d3eb2689b', // $SMART token
+      curve: '0x32968c128ed2ea3d19ceb595f6133e51d7aaae72',    // its Pons bonding curve
+      buyback: '',        // SmartBuyback contract once deployed; set feeRecipient to the same address
+      x: 'https://x.com/smartonrobin',
+      telegram: '',
+      feeBips: 25,        // front-end fee: 25 = 0.25% of each swap
+      feeRecipient: '0xed05072eed981d163235817ce1829e1927f6289a',   // receives the fee (the buyback contract once deployed); empty = no fee is charged
+      minBurn: 100000,
+      boostHours: 6,
+      labels: {
+        '0xe5e702641ea86f4ae6cc3cdaed2b886f976be044': 'Pons graduation hook',
+        '0x862e24dc6fbbd69e5904d4f9936d6bfb0b7a8a80': 'Hookshade · ShadeHook',
+      },
+      rpc: 'https://rpc.mainnet.chain.robinhood.com',
+      fastRpc: '', // optional private RPC for reads (e.g. QuickNode); empty = public RPC only
+    };
+    // ===============================================================
+
+    window.SMART_DATA = window.SMART_DATA || null; // filled in by scripts/build-single.mjs
+
+    const CHAIN_ID = 4663;
+    const POOL_MANAGER = '0x8366a39cc670b4001a1121b8f6a443a643e40951';
+    const ROUTER = '0x8876789976decbfcbbbe364623c63652db8c0904';
+    const PERMIT2 = '0x000000000022d473030f116ddee9f6b43ac78ba3';
+    const INITIALIZE = '0xdd466e674ea557f56295e2d0218a125ea4b4f0f6f3307b95f85e6110838d6438';
+    const SWAP = '0x40e9cecb9f5f1f1c5b9c97dec2917b7ee92e57ba5563708daca94dd84ad7112f';
+    const FACTORY = '0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e';
+    const LAUNCH_TOPIC = '0x8d4aad4953d0ca700d468f3753aa14432d1b35b43ec6409f051fb6aa43a89607';
+    const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+    const DEAD = '0x000000000000000000000000000000000000dead';
+    const ETH = '0x0000000000000000000000000000000000000000';
+    const MULTICALL = '0xcA11bde05977b3631167028862bE2a173976CA11';
+    const EXPLORER = 'https://robinhoodchain.blockscout.com';
+    const SEC_PER_BLOCK = 0.103;
+    const LIVE_BLOCKS = 5800;
+    const LOOKUP_SPAN = 9_900_000;
+    const DAY_BLOCKS = Math.round(86400 / SEC_PER_BLOCK);
+    const BOOST_BLOCKS = Math.round((CONFIG.boostHours * 3600) / SEC_PER_BLOCK);
+    const Q96 = 1n << 96n;
+    const MAX160 = (1n << 160n) - 1n;
+    const CACHE_KEY = 'smart-keys-v2';
+
+    const PERMS = [
+      [13, 'Decides which pools may be created with it', false], [12, 'Runs code when a pool is created', false],
+      [11, 'Can block or gate adding liquidity', false], [10, 'Runs code after liquidity is added', false],
+      [9, 'Can block or gate withdrawing liquidity', true], [8, 'Runs code after liquidity is withdrawn', false],
+      [7, 'Runs code before every swap, can set the fee', false], [6, 'Runs code after every swap', false],
+      [5, 'Runs code before donations', false], [4, 'Runs code after donations', false],
+      [3, 'Can change how much you pay or receive in a swap', true], [2, 'Can take a cut of what a swap returns', true],
+      [1, 'Can change what liquidity providers deposit', true], [0, 'Can change what liquidity providers get back', true],
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+    const hex = (n) => '0x' + n.toString(16);
+    const num = (n) => Number(n).toLocaleString('en-US');
+    const ponsUrl = (t) => `https://ponsfamily.com/launchpad/${t}`;
+    const fmt = (n, d = 4) => (n === 0 ? '0' : n >= 1e9 ? `${(n / 1e9).toFixed(2)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(2)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(2)}K` : n >= 1 ? n.toFixed(Math.min(d, 4)) : n.toPrecision(3));
+    const toUnits = (s, dec) => { const [i, f = ''] = String(s).trim().split('.'); if (!/^\d*$/.test(i) || !/^\d*$/.test(f)) return null; return BigInt(i || '0') * 10n ** BigInt(dec) + BigInt((f + '0'.repeat(dec)).slice(0, dec) || '0'); };
+    const fromUnits = (v, dec) => Number(v) / 10 ** dec;
+
+    // ---------- chain access ----------
+    async function rpc(method, params) {
+      if (CONFIG.fastRpc && method !== 'eth_getLogs') {
+        try {
+          const res = await fetch(CONFIG.fastRpc, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
+          const json = await res.json();
+          if (!json.error && json.result !== undefined) return json.result;
+          if (json.error && /revert/i.test(json.error.message || '')) throw Object.assign(new Error(json.error.message), { revert: json.error });
+        } catch (e) { if (e.revert) throw e; }
+      }
+      for (let attempt = 0; ; attempt++) {
+        let json;
+        try {
+          const res = await fetch(CONFIG.rpc, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
+          json = res.status === 429 ? { error: { message: 'Too Many Requests' } } : await res.json();
+        } catch { json = { error: { message: 'Too Many Requests (blocked reply)' } }; }
+        if (!json.error && json.result !== undefined) return json.result;
+        json.error ||= { message: 'Too Many Requests (empty reply)' };
+        if (/too many/i.test(json.error.message) && attempt < 4) { await sleep(1200 * (attempt + 1)); continue; }
+        throw Object.assign(new Error(json.error.message), { revert: /revert/i.test(json.error.message) ? json.error : null });
+      }
+    }
+    async function logsIn(filter, from, to) {
+      from = Math.max(0, from);
+      if (from > to) return [];
+      try { return await rpc('eth_getLogs', [{ ...filter, fromBlock: hex(from), toBlock: hex(to) }]); }
+      catch (err) {
+        if (!/exceeds limit|allowed|range|10000|too many results/i.test(err.message) || to - from < 50) throw err;
+        const m = Math.floor((from + to) / 2);
+        return [...await logsIn(filter, from, m), ...await logsIn(filter, m + 1, to)];
+      }
+    }
+    const W = (v) => (typeof v === 'bigint' ? v : BigInt(v)).toString(16).padStart(64, '0');
+    const A = (a) => a.toLowerCase().replace(/^0x/, '').padStart(64, '0');
+    function encodeMc(calls) {
+      const tuples = calls.map((c) => { const b = c.data.slice(2); return A(c.to) + W(1) + W(0x60) + W(b.length / 2) + b.padEnd(Math.ceil(b.length / 64) * 64, '0'); });
+      let off = calls.length * 32;
+      const heads = tuples.map((t) => { const h = W(off); off += t.length / 2; return h; });
+      return '0x82ad56cb' + W(0x20) + W(calls.length) + heads.join('') + tuples.join('');
+    }
+    function decodeMc(h) {
+      const d = h.slice(2);
+      const at = (b) => parseInt(d.slice(b * 2, b * 2 + 64), 16);
+      return Array.from({ length: at(32) }, (_, i) => { const t = 64 + at(64 + i * 32), b = t + at(t + 32); return at(t) === 1 ? '0x' + d.slice((b + 32) * 2, (b + 32 + at(b)) * 2) : null; });
+    }
+    async function multicall(calls) {
+      const out = [];
+      for (let i = 0; i < calls.length; i += 300) out.push(...decodeMc(await rpc('eth_call', [{ to: MULTICALL, data: encodeMc(calls.slice(i, i + 300)) }, 'latest'])));
+      return out;
+    }
+    const big = (h) => (h && h.length > 2 ? BigInt(h.slice(0, 66)) : 0n);
+    function str(h) {
+      if (!h || h.length < 130) return '';
+      try { const len = parseInt(h.slice(66, 130), 16); return new TextDecoder().decode(Uint8Array.from(h.slice(130, 130 + len * 2).match(/../g) || [], (b) => parseInt(b, 16))); } catch { return ''; }
+    }
+
+    // ---------- swap calldata (same as scripts/swap-lib.mjs, simulated against mainnet) ----------
+    const hexLen = (h) => W(h.length / 2);
+    const pad32 = (h) => h.padEnd(Math.ceil(h.length / 64) * 64, '0');
+    const bytesBody = (h) => hexLen(h) + pad32(h);
+    function bytesArray(items) {
+      let off = items.length * 32;
+      const heads = [], bodies = [];
+      for (const it of items) { heads.push(W(off)); const b = bytesBody(it); bodies.push(b); off += b.length / 2; }
+      return W(items.length) + heads.join('') + bodies.join('');
+    }
+    function exactInSingle(key, zeroForOne, amountIn, minOut) {
+      const head = A(key.c0) + A(key.c1) + W(key.fee) + W(BigInt(key.ts)) + A(key.hooks) + W(zeroForOne ? 1 : 0) + W(amountIn) + W(minOut) + W(32 * 9);
+      return W(32) + head + W(0);
+    }
+    const v4Input = (actions, params) => { const a = bytesBody(actions); return W(64) + W(64 + a.length / 2) + a + bytesArray(params); };
+    function execute(commands, inputs, deadline) { const c = bytesBody(commands.join('')); return W(96) + W(96 + c.length / 2) + W(deadline) + c + bytesArray(inputs); }
+    function buildSwap({ key, side, amountIn, minOut, user }) {
+      const feeBips = CONFIG.feeRecipient ? CONFIG.feeBips : 0;
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 900);
+      const commands = [], inputs = [];
+      if (side === 'buy') {
+        const fee = (amountIn * BigInt(feeBips)) / 10000n;
+        const swapIn = amountIn - fee;
+        if (fee > 0n) { commands.push('05'); inputs.push(A(ETH) + A(CONFIG.feeRecipient) + W(fee)); }
+        commands.push('10');
+        inputs.push(v4Input('060c0f', [exactInSingle(key, true, swapIn, minOut), A(key.c0) + W(swapIn), A(key.c1) + W(minOut)]));
+        return { to: ROUTER, value: amountIn, data: '0x3593564c' + execute(commands, inputs, deadline) };
+      }
+      commands.push('10');
+      inputs.push(v4Input('060c0e', [exactInSingle(key, false, amountIn, 0n), A(key.c1) + W(amountIn), A(key.c0) + A('0x0000000000000000000000000000000000000002') + W(0)]));
+      if (feeBips > 0) { commands.push('06'); inputs.push(A(ETH) + A(CONFIG.feeRecipient) + W(feeBips)); }
+      commands.push('04'); inputs.push(A(ETH) + A(user) + W(minOut));
+      return { to: ROUTER, value: 0n, data: '0x3593564c' + execute(commands, inputs, deadline) };
+    }
+
+    // ---------- snapshot + pool keys ----------
+    const D = window.SMART_DATA || { hooks: [], activePools: {}, totals: {}, topPools: [], head: 0, swapHours: 6 };
+    const hookIndex = new Map(D.hooks.map((h, i) => ['0x' + h[0], i]));
+    const hookRow = (a) => { const i = hookIndex.get(a.toLowerCase()); return i === undefined ? null : D.hooks[i]; };
+    const keys = new Map(); // pool id -> { id, c0, c1, fee, ts, hooks }
+    for (const p of D.topPools || []) keys.set(p[0], { id: p[0], c0: p[1], c1: p[2], fee: p[3], ts: p[4], hooks: p[5], snapSwaps: p[6] });
+    try { for (const [k, v] of Object.entries(JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'))) keys.set(k, v); } catch { /* storage blocked */ }
+    const saveKeys = () => { try { localStorage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries([...keys].filter(([, v]) => !v.snapSwaps).slice(-400)))); } catch { /* full */ } };
+
+    async function keyFor(id) {
+      if (keys.has(id)) return keys.get(id);
+      const head = state.head || parseInt(await rpc('eth_blockNumber', []), 16);
+      for (let back = 0; back < 10; back++) {
+        const to = head - back * LOOKUP_SPAN;
+        if (to < 0) break;
+        const logs = await rpc('eth_getLogs', [{ address: POOL_MANAGER, topics: [INITIALIZE, id], fromBlock: hex(Math.max(0, to - LOOKUP_SPAN)), toBlock: hex(to) }]);
+        if (logs.length) {
+          const d = logs[0].data.slice(2).match(/.{64}/g);
+          const k = { id, c0: '0x' + logs[0].topics[2].slice(26), c1: '0x' + logs[0].topics[3].slice(26), fee: parseInt(d[0], 16), ts: Number(BigInt.asIntN(24, BigInt('0x' + d[1]))), hooks: '0x' + d[2].slice(24) };
+          keys.set(id, k);
+          saveKeys();
+          return k;
+        }
+      }
+      return null;
+    }
+
+    // every v4 pool that pairs a token with ETH, newest first; the busiest one by recent swaps wins
+    async function findTokenPools(token) {
+      const head = state.head || parseInt(await rpc('eth_blockNumber', []), 16);
+      const found = [];
+      for (let back = 0; back < 10 && head - back * LOOKUP_SPAN > 0; back++) {
+        const to = head - back * LOOKUP_SPAN;
+        const logs = await rpc('eth_getLogs', [{ address: POOL_MANAGER, topics: [INITIALIZE, null, '0x' + A(ETH), '0x' + A(token)], fromBlock: hex(Math.max(0, to - LOOKUP_SPAN)), toBlock: hex(to) }]).catch(() => []);
+        for (const l of logs) {
+          const d = l.data.slice(2).match(/.{64}/g);
+          const k = { id: l.topics[1], c0: ETH, c1: token, fee: parseInt(d[0], 16), ts: Number(BigInt.asIntN(24, BigInt('0x' + d[1]))), hooks: '0x' + d[2].slice(24) };
+          keys.set(k.id, k);
+          found.push(k);
+        }
+        if (found.length) break;
+      }
+      saveKeys();
+      const counts = new Map(); for (const s of state.live) counts.set(s.id, (counts.get(s.id) || 0) + 1);
+      return found.sort((a, b) => (counts.get(b.id) || 0) - (counts.get(a.id) || 0));
+    }
+
+    const permsOf = (a) => { const v = parseInt(a.slice(-4), 16) & 0x3fff; return PERMS.filter(([bit]) => v & (1 << bit)); };
+    function riskOf(a) {
+      if (a.toLowerCase() === ETH) return null;
+      const bits = new Set(permsOf(a).map(([b]) => b));
+      if (bits.has(3) || bits.has(2)) return ['high', 'CAN CHANGE SWAP AMOUNTS'];
+      if (bits.has(1) || bits.has(0)) return ['high', 'CAN CHANGE LP AMOUNTS'];
+      if (bits.has(9)) return ['med', 'CAN GATE WITHDRAWALS'];
+      if (bits.has(7) || bits.has(6)) return ['med', 'RUNS ON SWAPS'];
+      return ['low', 'LIMITED'];
+    }
+    const riskBadge = (a) => { const r = riskOf(a); return r ? `<span class="risk ${r[0]}">${r[1]}</span>` : ''; };
+    const hookName = (a) => CONFIG.labels[a.toLowerCase()] || short(a);
+
+    // ---------- state ----------
+    const state = { head: 0, live: [], lastBlock: 0, tokens: new Map(), pool: null, side: 'buy', slip: 5, wallet: null, burns: [], burnNext: 0, creators: new Map() };
+
+    async function tokenInfo(addrs) {
+      const need = [...new Set(addrs)].filter((a) => a !== ETH && !state.tokens.has(a));
+      if (!need.length) return;
+      const r = await multicall(need.flatMap((a) => [{ to: a, data: '0x95d89b41' }, { to: a, data: '0x06fdde03' }, { to: a, data: '0x313ce567' }]));
+      need.forEach((a, i) => state.tokens.set(a, { symbol: str(r[i * 3]) || short(a), name: str(r[i * 3 + 1]) || '', decimals: r[i * 3 + 2] ? Number(big(r[i * 3 + 2])) : 18 }));
+    }
+    const sym = (a) => (a === ETH ? 'ETH' : state.tokens.get(a)?.symbol || short(a));
+
+    // live swaps across all pools: count per pool and keep the latest price state per pool
+    async function readLive() {
+      state.head = parseInt(await rpc('eth_blockNumber', []), 16);
+      const from = state.lastBlock ? state.lastBlock + 1 : state.head - LIVE_BLOCKS;
+      const logs = await logsIn({ address: POOL_MANAGER, topics: [SWAP] }, from, state.head);
+      state.lastBlock = state.head;
+      for (const l of logs) {
+        const d = l.data.slice(2).match(/.{64}/g);
+        // Swap(id, sender | amount0, amount1, sqrtPriceX96, liquidity, tick, fee)
+        state.live.push({ id: l.topics[1], b: parseInt(l.blockNumber, 16), sqrtP: BigInt('0x' + d[2]), liq: BigInt('0x' + d[3]), fee: parseInt(d[5], 16), tx: l.transactionHash });
+      }
+      state.live = state.live.filter((s) => s.b > state.head - LIVE_BLOCKS);
+    }
+    const lastSwapOf = (id) => { for (let i = state.live.length - 1; i >= 0; i--) if (state.live[i].id === id) return state.live[i]; return null; };
+
+    // current price state of one pool: the latest Swap event, searched further back if the pool is quiet
+    async function poolState(id) {
+      const s = lastSwapOf(id);
+      if (s) return s;
+      for (let back = 0; back < 6; back++) {
+        const to = state.head - back * 200_000;
+        const logs = await logsIn({ address: POOL_MANAGER, topics: [SWAP, id] }, Math.max(0, to - 200_000), to);
+        if (logs.length) {
+          const l = logs[logs.length - 1];
+          const d = l.data.slice(2).match(/.{64}/g);
+          return { id, b: parseInt(l.blockNumber, 16), sqrtP: BigInt('0x' + d[2]), liq: BigInt('0x' + d[3]), fee: parseInt(d[5], 16) };
+        }
+      }
+      return null;
+    }
+
+    // constant-liquidity estimate within the current tick range, after the pool's lp fee
+    function estimate(st, zeroForOne, amountIn) {
+      if (!st || !st.liq || !st.sqrtP) return 0n;
+      const afterFee = (amountIn * BigInt(1_000_000 - Math.min(st.fee, 999_999))) / 1_000_000n;
+      const L = st.liq, P = st.sqrtP;
+      if (zeroForOne) {
+        const Pn = (L * Q96 * P) / (L * Q96 + afterFee * P);
+        return (L * (P - Pn)) / Q96;
+      }
+      const Pn = P + (afterFee * Q96) / L;
+      return (L * Q96 * (Pn - P)) / (Pn * P);
+    }
+
+    // ---------- render: pool list ----------
+    function renderList() {
+      const counts = new Map();
+      for (const s of state.live) counts.set(s.id, (counts.get(s.id) || 0) + 1);
+      const rows = [...counts].map(([id, n]) => ({ k: keys.get(id), n })).filter((r) => r.k && r.k.c0 === ETH && r.k.hooks !== ETH).sort((a, b) => b.n - a.n).slice(0, 15);
+      // a pool has a hook if its key says so, or the snapshot marked it as hooked (-1 = plain pool)
+      const isHooked = (id) => { const k = keys.get(id); if (k) return k.hooks !== ETH; const v = D.activePools[id.slice(2, 18)]; return v !== undefined && v !== -1; };
+      const hooked = state.live.filter((s) => isHooked(s.id)).length;
+      $('f-live').textContent = state.live.length ? num(state.live.length) : '—';
+      $('f-pools').textContent = state.live.length ? num([...counts.keys()].filter(isHooked).length) : '—';
+      $('f-share').textContent = state.live.length ? `${Math.round((hooked / state.live.length) * 100)}%` : '—';
+      $('pool-list').innerHTML = rows.length ? `<table><thead><tr><th>Pair</th><th>Hook</th><th>Permissions</th><th class="num">Swaps · 10m</th><th class="num">Price (ETH)</th><th></th></tr></thead><tbody>${rows.map(({ k, n }) => {
+        const st = lastSwapOf(k.id);
+        const t = state.tokens.get(k.c1);
+        const px = st ? priceOf(st, t?.decimals ?? 18) : 0;
+        return `<tr><td class="pair"><b>${esc(sym(k.c1))}</b> / ETH<small>${esc(t?.name || '')}</small></td><td class="mono">${esc(hookName(k.hooks))}</td><td>${riskBadge(k.hooks)}</td><td class="num">${num(n)}</td><td class="num">${px ? px.toPrecision(3) : '—'}</td><td><button class="btn sm pk" data-pool="${k.id}">Trade</button></td></tr>`;
+      }).join('')}</tbody></table>` : '<p class="empty">Reading swaps…</p>';
+    }
+    // price of token1 in ETH from sqrtPriceX96 (token0 is ETH)
+    function priceOf(st, dec1) {
+      const p = Number(st.sqrtP) / 2 ** 96;
+      const t1PerEth = p * p * 10 ** (18 - dec1);
+      return t1PerEth ? 1 / t1PerEth : 0;
+    }
+
+    // ---------- render: pool + swap ----------
+    async function openPool(input) {
+      const v = input.trim().toLowerCase();
+      let id = null;
+      $('pool-info').innerHTML = '<p class="muted">Looking it up…</p>';
+      document.getElementById('trade').scrollIntoView({ behavior: 'smooth' });
+      if (/^0x[0-9a-f]{64}$/.test(v)) id = v;
+      else if (/^0x[0-9a-f]{40}$/.test(v)) {
+        // a hook or a token: pick its busiest ETH pool we know about
+        const cands = [...keys.values()].filter((k) => k.c0 === ETH && (k.hooks === v || k.c1 === v));
+        const counts = new Map(); for (const s of state.live) counts.set(s.id, (counts.get(s.id) || 0) + 1);
+        cands.sort((a, b) => (counts.get(b.id) || 0) - (counts.get(a.id) || 0) || (b.snapSwaps || 0) - (a.snapSwaps || 0));
+        if (cands[0]) id = cands[0].id;
+        else {
+          // not in the snapshot: treat it as a token and look for v4 pools pairing it with ETH (currency0 = ETH, currency1 = token)
+          $('pool-info').innerHTML = '<p class="muted">Searching the chain for ETH pools of this token…</p>';
+          const found = await findTokenPools(v);
+          if (!found.length) { $('pool-info').innerHTML = `<p class="muted">No Uniswap v4 ETH pool found for ${short(v)}. If it is a hook address, paste the pool id instead (DexScreener shows it as the pair address).</p>`; return; }
+          id = found[0].id;
+        }
+      } else { $('pool-info').innerHTML = '<p class="muted">Paste a pool id (0x + 64 hex), a hook or a token address.</p>'; return; }
+      const k = await keyFor(id);
+      if (!k) { $('pool-info').innerHTML = '<p class="muted">No Uniswap v4 pool with that id on Robinhood Chain.</p>'; return; }
+      await tokenInfo([k.c0, k.c1]);
+      state.pool = k;
+      state.poolState = await poolState(id);
+      history.replaceState(null, '', `?pool=${id}#trade`);
+      renderPool();
+      renderSwap();
+      quote();
+      refreshBalances();
+    }
+
+    function renderPool() {
+      const k = state.pool;
+      const t1 = state.tokens.get(k.c1);
+      const row = hookRow(k.hooks);
+      const noHook = k.hooks === ETH;
+      const live = state.live.filter((s) => s.id === k.id).length;
+      const st = state.poolState;
+      const perms = noHook ? [] : permsOf(k.hooks);
+      const verdict = noHook ? ['idle', 'Plain pool: no hook.'] : !row ? ['idle', 'This hook has few pools and no recent swaps besides this pool.'] : row[4] >= 50 || live >= 5 ? ['real', `Real hook: ${num(row[4])} swaps across its pools in ${D.swapHours}h, ${num(row[1])} pools.`] : ['idle', `Barely used: ${num(row[4])} swaps across its pools in ${D.swapHours}h.`];
+      $('pool-info').innerHTML = `<h3>${esc(sym(k.c1))} / ${esc(sym(k.c0))}</h3>
+        <p class="sub">${esc(t1?.name || '')} · pool ${short(k.id)} · ${k.fee >= 0x800000 ? 'dynamic fee' : (k.fee / 10000).toFixed(2) + '% fee'}</p>
+        <dl class="kv">
+          <div><dt>Price</dt><dd>${st ? priceOf(st, t1?.decimals ?? 18).toPrecision(4) + ' ETH' : '—'}</dd></div>
+          <div><dt>Swaps · 10m</dt><dd>${num(live)}</dd></div>
+          <div><dt>Last swap</dt><dd>${st ? Math.max(1, Math.round(((state.head - st.b) * SEC_PER_BLOCK) / 60)) + 'm ago' : '—'}</dd></div>
+        </dl>
+        <strong>Hook ${noHook ? '' : esc(hookName(k.hooks))}</strong> ${noHook ? '' : riskBadge(k.hooks)}
+        <ul class="perm">${noHook ? '<li>No hook on this pool.</li>' : perms.length ? perms.map(([, t, hot]) => `<li class="${hot ? 'hot' : ''}">${t}</li>`).join('') : '<li>No permission bits set.</li>'}</ul>
+        <p class="verdict ${verdict[0]}">${verdict[1]}</p>
+        <div class="row" style="margin-top:14px">${k.c1 !== ETH ? `<a class="btn sm" href="${EXPLORER}/token/${k.c1}" target="_blank" rel="noopener">Token ↗</a>` : ''}${noHook ? '' : `<a class="btn sm" href="${EXPLORER}/address/${k.hooks}" target="_blank" rel="noopener">Hook ↗</a>`}<a class="btn sm" href="https://dexscreener.com/robinhood/${k.id}" target="_blank" rel="noopener">Chart ↗</a></div>`;
+      $('share').innerHTML = `<button class="btn sm" id="copy-link">Copy pool link</button><a class="btn sm" target="_blank" rel="noopener" href="https://x.com/intent/post?text=${encodeURIComponent(`Trade $${sym(k.c1)} through its v4 hook on Smart`)}&url=${encodeURIComponent(location.origin + location.pathname + '?pool=' + k.id)}">Share</a>`;
+      $('link-example').textContent = `${location.host || 'smart'}${location.pathname}?pool=${k.id}`;
+    }
+
+    function renderSwap() {
+      const k = state.pool;
+      $('tab-buy').setAttribute('aria-selected', state.side === 'buy');
+      $('tab-sell').setAttribute('aria-selected', state.side === 'sell');
+      $('tk-in').textContent = state.side === 'buy' ? 'ETH' : k ? sym(k.c1) : '—';
+      $('tk-out').textContent = state.side === 'buy' ? (k ? sym(k.c1) : '—') : 'ETH';
+      const pct = CONFIG.feeRecipient ? (CONFIG.feeBips / 100).toFixed(2) + '%' : '0%';
+      document.querySelectorAll('.fee-pct').forEach((el) => (el.textContent = (CONFIG.feeBips / 100).toFixed(2) + '%'));
+      $('q-fee').textContent = pct;
+    }
+
+    function amountInUnits() {
+      const k = state.pool;
+      if (!k) return null;
+      const dec = state.side === 'buy' ? 18 : state.tokens.get(k.c1)?.decimals ?? 18;
+      return toUnits($('amount').value || '0', dec);
+    }
+
+    function quote() {
+      const k = state.pool;
+      const go = $('go');
+      if (!k) { go.disabled = true; go.textContent = 'Select a pool'; return; }
+      if (k.c0 !== ETH) { go.disabled = true; go.textContent = 'Only ETH pairs for now'; return; }
+      const amt = amountInUnits();
+      const decOut = state.side === 'buy' ? state.tokens.get(k.c1)?.decimals ?? 18 : 18;
+      const feeBips = CONFIG.feeRecipient ? BigInt(CONFIG.feeBips) : 0n;
+      let out = 0n;
+      if (amt && amt > 0n) {
+        if (state.side === 'buy') out = estimate(state.poolState, true, amt - (amt * feeBips) / 10000n);
+        else { const raw = estimate(state.poolState, false, amt); out = raw - (raw * feeBips) / 10000n; }
+      }
+      state.estOut = out;
+      state.minOut = (out * BigInt(Math.round((100 - state.slip) * 100))) / 10000n;
+      $('out').textContent = out ? fmt(fromUnits(out, decOut)) : '0.0';
+      $('q-min').textContent = out ? `${fmt(fromUnits(state.minOut, decOut))} ${state.side === 'buy' ? sym(k.c1) : 'ETH'}` : '—';
+      const st = state.poolState;
+      $('q-price').textContent = st ? `1 ${sym(k.c1)} = ${priceOf(st, state.tokens.get(k.c1)?.decimals ?? 18).toPrecision(4)} ETH` : '—';
+      if (!state.wallet) { go.disabled = false; go.textContent = 'Connect wallet'; return; }
+      if (!amt || amt === 0n) { go.disabled = true; go.textContent = 'Enter an amount'; return; }
+      if (!st) { go.disabled = true; go.textContent = 'No price yet'; return; }
+      go.disabled = false;
+      go.textContent = state.side === 'buy' ? `Buy ${sym(k.c1)}` : `Sell ${sym(k.c1)}`;
+    }
+
+    async function refreshBalances() {
+      if (!state.wallet || !state.pool) { $('bal-in').textContent = 'Balance —'; $('bal-out').textContent = 'Balance —'; return; }
+      const k = state.pool;
+      const [eth, tok] = await Promise.all([rpc('eth_getBalance', [state.wallet, 'latest']), rpc('eth_call', [{ to: k.c1, data: '0x70a08231' + A(state.wallet) }, 'latest'])]);
+      const dec = state.tokens.get(k.c1)?.decimals ?? 18;
+      state.balEth = BigInt(eth); state.balTok = big(tok);
+      const e = `${fmt(fromUnits(state.balEth, 18))} ETH`, t = `${fmt(fromUnits(state.balTok, dec))} ${sym(k.c1)}`;
+      $('bal-in').innerHTML = `Balance ${state.side === 'buy' ? e : t} <button id="max">Max</button>`;
+      $('bal-out').textContent = `Balance ${state.side === 'buy' ? t : e}`;
+      $('max').onclick = () => {
+        const v = state.side === 'buy' ? (state.balEth > 2n * 10n ** 15n ? state.balEth - 2n * 10n ** 15n : 0n) : state.balTok; // keep a little ETH for gas
+        $('amount').value = fromUnits(v, state.side === 'buy' ? 18 : dec).toString();
+        quote();
+      };
+    }
+
+    // ---------- wallet ----------
+    async function connect() {
+      if (!window.ethereum) { toast('No wallet found. Open this page in your wallet browser.'); return null; }
+      try {
+        const [a] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        state.wallet = a.toLowerCase();
+        $('connect').textContent = short(state.wallet);
+        await ensureChain();
+        quote();
+        refreshBalances();
+        return state.wallet;
+      } catch { return null; }
+    }
+    async function ensureChain() {
+      const id = parseInt(await window.ethereum.request({ method: 'eth_chainId' }), 16);
+      if (id === CHAIN_ID) return;
+      try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hex(CHAIN_ID) }] }); }
+      catch (e) {
+        if (e.code === 4902) await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: hex(CHAIN_ID), chainName: 'Robinhood Chain', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: [CONFIG.rpc], blockExplorerUrls: [EXPLORER] }] });
+        else throw e;
+      }
+    }
+    async function send(tx, label) {
+      const params = { from: state.wallet, to: tx.to, data: tx.data, value: hex(tx.value || 0n) };
+      const hash = await window.ethereum.request({ method: 'eth_sendTransaction', params: [params] });
+      msg(`${label} sent. Waiting for confirmation… <a href="${EXPLORER}/tx/${hash}" target="_blank" rel="noopener">tx ↗</a>`);
+      for (let i = 0; i < 120; i++) {
+        await sleep(1000);
+        const r = await rpc('eth_getTransactionReceipt', [hash]).catch(() => null);
+        if (r) { if (r.status !== '0x1') throw new Error(`${label} failed on-chain`); return hash; }
+      }
+      return hash;
+    }
+    const msg = (html, cls = '') => { $('msg').className = `msg ${cls}`; $('msg').innerHTML = html; };
+
+    // selling pulls tokens through Permit2: token -> Permit2 approval, then Permit2 -> router allowance
+    async function ensureApprovals(amount) {
+      const k = state.pool;
+      const allowance = big(await rpc('eth_call', [{ to: k.c1, data: '0xdd62ed3e' + A(state.wallet) + A(PERMIT2) }, 'latest']));
+      if (allowance < amount) {
+        msg('Step 1 of 2: approve the token for Permit2 in your wallet.');
+        await send({ to: k.c1, data: '0x095ea7b3' + A(PERMIT2) + W((1n << 256n) - 1n) }, 'Approval');
+      }
+      const p = await rpc('eth_call', [{ to: PERMIT2, data: '0x927da105' + A(state.wallet) + A(k.c1) + A(ROUTER) }, 'latest']);
+      const amt = BigInt('0x' + p.slice(2, 66)), exp = Number(BigInt('0x' + p.slice(66, 130)));
+      if (amt < amount || exp < Date.now() / 1000 + 60) {
+        msg('Step 2 of 2: allow the Uniswap router through Permit2 in your wallet.');
+        const expiry = BigInt(Math.floor(Date.now() / 1000) + 30 * 86400);
+        await send({ to: PERMIT2, data: '0x87517c45' + A(k.c1) + A(ROUTER) + W(MAX160) + W(expiry) }, 'Permit2 approval');
+      }
+    }
+
+    async function doSwap() {
+      if (!state.wallet) { await connect(); return; }
+      const k = state.pool;
+      const amt = amountInUnits();
+      if (!k || !amt || amt === 0n) return;
+      $('go').disabled = true;
+      try {
+        await ensureChain();
+        if (state.side === 'buy' && state.balEth != null && amt > state.balEth) throw new Error('Not enough ETH');
+        if (state.side === 'sell' && state.balTok != null && amt > state.balTok) throw new Error(`Not enough ${sym(k.c1)}`);
+        if (state.side === 'sell') await ensureApprovals(amt);
+        state.poolState = await poolState(k.id);
+        quote();
+        const tx = buildSwap({ key: k, side: state.side, amountIn: amt, minOut: state.minOut, user: state.wallet });
+        msg('Simulating the swap…');
+        try { await rpc('eth_call', [{ from: state.wallet, to: tx.to, value: hex(tx.value), data: tx.data }, 'latest']); }
+        catch (e) { throw new Error(e.revert ? 'The swap would fail at this slippage. Try a higher slippage or a smaller amount.' : e.message); }
+        msg('Confirm the swap in your wallet.');
+        const hash = await send(tx, 'Swap');
+        msg(`Swap done. <a href="${EXPLORER}/tx/${hash}" target="_blank" rel="noopener">View tx ↗</a>`, 'ok');
+        $('amount').value = '';
+        refreshBalances();
+      } catch (e) {
+        msg(esc(e.message || 'Cancelled'), 'err');
+      } finally { quote(); }
+    }
+
+    // ---------- featured (burn $SMART) ----------
+    async function readFeatured() {
+      if (!CONFIG.contract) return;
+      const padA = (a) => '0x' + A(a);
+      const logs = await logsIn({ address: CONFIG.contract, topics: [TRANSFER_TOPIC, null, padA(DEAD)] }, state.burnNext || state.head - DAY_BLOCKS, state.head);
+      const known = new Set(state.burns.map((b) => b.key));
+      for (const l of logs) { const key = l.transactionHash + l.logIndex; if (!known.has(key)) state.burns.push({ from: '0x' + l.topics[1].slice(26), amount: Number(BigInt(l.data)) / 1e18, block: parseInt(l.blockNumber, 16), key }); }
+      state.burnNext = state.head + 1;
+      for (const b of state.burns) {
+        if (state.creators.has(b.from) || b.block < state.head - BOOST_BLOCKS) continue;
+        try {
+          const ls = await logsIn({ address: FACTORY, topics: [LAUNCH_TOPIC, null, null, padA(b.from)] }, state.head - LOOKUP_SPAN, state.head);
+          const last = ls.sort((x, y) => parseInt(y.blockNumber, 16) - parseInt(x.blockNumber, 16))[0];
+          state.creators.set(b.from, last ? '0x' + last.topics[1].slice(26) : null);
+        } catch { /* next round */ }
+      }
+      await tokenInfo([...state.creators.values()].filter(Boolean));
+    }
+    function renderFeatured() {
+      const by = new Map();
+      for (const b of state.burns) { if (b.block < state.head - BOOST_BLOCKS) continue; const t = state.creators.get(b.from); if (!t) continue; const s = by.get(t) || { t, burned: 0 }; s.burned += b.amount; by.set(t, s); }
+      const top = [...by.values()].filter((s) => s.burned >= CONFIG.minBurn).sort((a, b) => b.burned - a.burned).slice(0, 3);
+      const cards = top.map((s, i) => `<a class="slot paid" href="${ponsUrl(s.t)}" target="_blank" rel="noopener"><span class="rank">#${i + 1} · Featured</span><p class="sym">$${esc(sym(s.t))}</p><p>${esc(state.tokens.get(s.t)?.name || '')}</p><p class="meta">Burned ${fmt(s.burned)} $${esc(CONFIG.ticker)}</p></a>`);
+      for (let i = top.length; i < 3; i++) cards.push(`<a class="slot open" href="#builders"><span class="rank">#${i + 1} · Open slot</span><p class="sym">Your hook project here</p><p>Burn ${fmt(CONFIG.minBurn)}+ $${esc(CONFIG.ticker)} from your dev wallet.</p></a>`);
+      $('featured-list').innerHTML = cards.join('');
+    }
+
+    function toast(t) { $('toast').textContent = t; $('toast').classList.add('on'); clearTimeout(state.tt); state.tt = setTimeout(() => $('toast').classList.remove('on'), 2600); }
+
+    function setup() {
+      document.querySelectorAll('.tkr').forEach((el) => (el.textContent = CONFIG.ticker));
+      document.querySelectorAll('.min-burn').forEach((el) => (el.textContent = CONFIG.minBurn.toLocaleString('en-US')));
+      document.querySelectorAll('.boost-hours').forEach((el) => (el.textContent = CONFIG.boostHours));
+      $('h-hooks').textContent = D.totals?.hooks ? num(D.totals.hooks) : '29,000+';
+      $('f-hooks').textContent = D.totals?.hooks ? num(D.totals.hooks) : '—';
+      const links = [];
+      if (CONFIG.contract) {
+        $('token-status').textContent = 'Live on Robinhood Chain';
+        $('ca').innerHTML = `<span>${esc(CONFIG.contract)}</span><button class="btn sm" id="copy-ca">Copy</button>`;
+        links.push(`<a class="btn pk" href="${ponsUrl(CONFIG.contract)}" target="_blank" rel="noopener">Buy $${esc(CONFIG.ticker)}</a>`);
+        $('nav-cta').textContent = `Buy $${CONFIG.ticker}`; $('nav-cta').href = ponsUrl(CONFIG.contract); $('nav-cta').target = '_blank';
+      }
+      if (CONFIG.x) links.push(`<a class="btn" href="${esc(CONFIG.x)}" target="_blank" rel="noopener">Follow on X</a>`);
+      if (CONFIG.telegram) links.push(`<a class="btn" href="${esc(CONFIG.telegram)}" target="_blank" rel="noopener">Telegram</a>`);
+      $('token-links').innerHTML = links.join('');
+
+      $('connect').onclick = connect;
+      $('search').onsubmit = (e) => { e.preventDefault(); openPool($('search-in').value); };
+      $('tab-buy').onclick = () => { state.side = 'buy'; $('amount').value = ''; renderSwap(); quote(); refreshBalances(); };
+      $('tab-sell').onclick = () => { state.side = 'sell'; $('amount').value = ''; renderSwap(); quote(); refreshBalances(); };
+      $('amount').oninput = quote;
+      $('slip').onclick = (e) => { const s = e.target.closest('[data-s]')?.dataset.s; if (!s) return; state.slip = Number(s); document.querySelectorAll('#slip button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.s === s)); quote(); };
+      $('go').onclick = doSwap;
+      document.addEventListener('click', async (e) => {
+        const p = e.target.closest('[data-pool]')?.dataset.pool;
+        if (p) { openPool(p); return; }
+        if (e.target.id === 'copy-link' && state.pool) { try { await navigator.clipboard.writeText(location.origin + location.pathname + '?pool=' + state.pool.id); toast('Pool link copied.'); } catch { toast('Copy failed'); } }
+        if (e.target.id === 'copy-ca') { try { await navigator.clipboard.writeText(CONFIG.contract); toast('Copied.'); } catch { toast('Copy failed'); } }
+      });
+      if (window.ethereum?.on) window.ethereum.on('accountsChanged', (a) => { state.wallet = a[0]?.toLowerCase() || null; $('connect').textContent = state.wallet ? short(state.wallet) : 'Connect wallet'; quote(); refreshBalances(); });
+      renderSwap();
+      renderFeatured();
+    }
+
+    async function cycle() {
+      try {
+        await readLive();
+        await tokenInfo([...new Set(state.live.map((s) => keys.get(s.id)?.c1).filter(Boolean))].slice(0, 60));
+        renderList();
+        if (state.pool) {
+          const s = lastSwapOf(state.pool.id);
+          if (s) { state.poolState = s; renderPool(); quote(); }
+        }
+      } catch (err) { if (!state.live.length) $('pool-list').innerHTML = `<p class="empty">Retrying (${esc(err.message)})…</p>`; }
+      try { await readFeatured(); renderFeatured(); } catch { /* optional */ }
+    }
+
+    // ---------- pages: #/ trade, #/token, #/docs/<slug>, #/roadmap, #/changelog ----------
+    const DOCS = [...document.querySelectorAll('#doc-src > section')].map((s) => ({ slug: s.dataset.slug, group: s.dataset.group, title: s.dataset.title, el: s }));
+    const PAGES = { token: 'Token & burns', roadmap: 'Roadmap', changelog: 'Changelog', docs: 'Docs' };
+    let page = 'home';
+
+    function fillDocs() {
+      document.querySelectorAll('.d-hooks').forEach((el) => (el.textContent = D.totals?.hooks ? num(D.totals.hooks) : '29,000+'));
+      $('doc-perms').innerHTML = '<thead><tr><th>Bit</th><th>Permission</th><th>Touches your money</th></tr></thead><tbody>' + PERMS.map(([bit, text, hot]) => `<tr><td class="mono">${bit}</td><td>${esc(text)}</td><td>${hot ? '<span class="risk high">! YES</span>' : '<span class="muted">no</span>'}</td></tr>`).join('') + '</tbody>';
+      const link = (a) => a ? `<a href="${EXPLORER}/address/${a}" target="_blank" rel="noopener"><code>${a}</code></a>` : '<span class="muted">deploying</span>';
+      const rows = [['$SMART token', CONFIG.contract], ['$SMART Pons curve', CONFIG.curve], ['Buyback contract', CONFIG.buyback], ['Fee recipient (current)', CONFIG.feeRecipient], ['Uniswap Universal Router', ROUTER], ['Uniswap v4 PoolManager', POOL_MANAGER], ['Permit2', PERMIT2], ['Pons factory', FACTORY], ['Burn address', '0x000000000000000000000000000000000000dEaD']];
+      $('doc-contracts').innerHTML = '<thead><tr><th>What</th><th>Address</th></tr></thead><tbody>' + rows.map(([w, a]) => `<tr><td>${esc(w)}</td><td>${link(a)}</td></tr>`).join('') + '</tbody>';
+      $('doc-bb-addr').innerHTML = CONFIG.buyback ? `Contract: ${link(CONFIG.buyback)}` : `The contract is being deployed. Until then, fees go to the Smart treasury ${link(CONFIG.feeRecipient)} and are bought back and burned by hand, with every transaction posted.`;
+    }
+
+    function showDoc(slug) {
+      const i = Math.max(0, DOCS.findIndex((d) => d.slug === slug)), d = DOCS[i];
+      let side = '', g = '';
+      for (const x of DOCS) { if (x.group !== g) { g = x.group; side += `<b>${esc(g)}</b>`; } side += `<a href="#/docs/${x.slug}" class="${x === d ? 'on' : ''}">${esc(x.title)}</a>`; }
+      $('sidebar').innerHTML = side;
+      $('crumbs').innerHTML = `<a href="#/docs/introduction">Docs</a> / ${esc(d.group)} / ${esc(d.title)}`;
+      $('doc-body').innerHTML = `<h1>${esc(d.title)}</h1>` + d.el.innerHTML;
+      const hs = [...$('doc-body').querySelectorAll('h2')];
+      hs.forEach((h, k) => (h.id = 'h-' + k));
+      $('toc').innerHTML = hs.length ? '<p>On this page</p>' + hs.map((h) => `<a href="#/docs/${d.slug}" data-h="${h.id}">${esc(h.textContent)}</a>`).join('') : '';
+      const prev = DOCS[i - 1], next = DOCS[i + 1];
+      $('pager').innerHTML = (prev ? `<a href="#/docs/${prev.slug}"><small>← Previous</small><b>${esc(prev.title)}</b></a>` : '') + (next ? `<a class="nx" href="#/docs/${next.slug}"><small>Next →</small><b>${esc(next.title)}</b></a>` : '');
+      document.title = `${d.title} · Smart docs`;
+    }
+
+    function route() {
+      const h = location.hash;
+      const parts = h.startsWith('#/') ? h.slice(2).split('/') : [''];
+      page = PAGES[parts[0]] ? parts[0] : 'home';
+      document.querySelectorAll('.page').forEach((p) => p.classList.toggle('on', p.dataset.page === page));
+      document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === page));
+      $('menu').classList.remove('open');
+      if (page === 'docs') showDoc(parts[1]);
+      else document.title = page === 'home' ? 'Smart — trade any Uniswap v4 hook pool' : `${PAGES[page]} · Smart`;
+      if (page === 'token') readBurns();
+      // plain anchors (#pools, #trade, #builders) live on the trade page
+      const anchor = !h.startsWith('#/') && h.length > 1 && document.getElementById(h.slice(1));
+      if (anchor) anchor.scrollIntoView(); else window.scrollTo(0, 0);
+    }
+
+    // live buyback numbers: burn address balance, plus the contract's counters (or the treasury until it exists)
+    const word = (r) => (r && r !== '0x' ? BigInt(r) : 0n);
+    const units = (v) => Number(v) / 1e18;
+    let bbMin = 0n, bbPending = 0n;
+    async function readBurns() {
+      if (!CONFIG.contract) return;
+      try {
+        const calls = [rpc('eth_call', [{ to: CONFIG.contract, data: '0x70a08231' + '000000000000000000000000000000000000dead'.padStart(64, '0') }, 'latest']), rpc('eth_call', [{ to: CONFIG.contract, data: '0x18160ddd' }, 'latest'])];
+        if (CONFIG.buyback) for (const sel of ['0xd89135cd', '0x92d3b886', '0xf21ba585', '0x7107d7a6']) calls.push(rpc('eth_call', [{ to: CONFIG.buyback, data: sel }, 'latest']));
+        calls.push(rpc('eth_getBalance', [CONFIG.buyback || CONFIG.feeRecipient, 'latest']));
+        const r = await Promise.all(calls);
+        const dead = units(word(r[0])), supply = units(word(r[1])) || 1e9;
+        $('bb-dead').textContent = fmt(dead);
+        $('bb-dead-pct').textContent = `${((dead / supply) * 100).toFixed(2)}% of supply`;
+        const bal = word(r[r.length - 1]);
+        if (CONFIG.buyback) {
+          bbMin = word(r[5]); bbPending = bal;
+          $('bb-burned').textContent = fmt(units(word(r[2])));
+          $('bb-eth').textContent = `${fmt(units(word(r[3])), 4)} ETH`;
+          $('bb-buys').textContent = `${num(Number(word(r[4])))} buybacks`;
+          $('bb-pending').textContent = `${fmt(units(bal), 5)} ETH`;
+          $('bb-next').textContent = bal >= bbMin ? 'ready to burn' : `burns at ${fmt(units(bbMin), 4)} ETH`;
+          $('bb-src').innerHTML = `Contract <a class="pk" href="${EXPLORER}/address/${CONFIG.buyback}" target="_blank" rel="noopener">${short(CONFIG.buyback)} ↗</a>`;
+          $('bb-go').disabled = bal < bbMin;
+        } else {
+          $('bb-l2').textContent = 'Buyback contract'; $('bb-burned').textContent = 'Deploying'; $('bb-buys').textContent = 'fees go to the treasury meanwhile';
+          $('bb-l3').textContent = 'Fees in the treasury'; $('bb-eth').textContent = `${fmt(units(bal), 5)} ETH`;
+          $('bb-pending').textContent = `${fmt(units(bal), 5)} ETH`; $('bb-next').textContent = 'bought back and burned by hand';
+          $('bb-src').innerHTML = `Treasury <a class="pk" href="${EXPLORER}/address/${CONFIG.feeRecipient}" target="_blank" rel="noopener">${short(CONFIG.feeRecipient)} ↗</a>`;
+          $('bb-note').textContent = 'Until the buyback contract is live, the treasury buys back and burns by hand and posts every transaction.';
+        }
+      } catch { $('bb-src').textContent = 'Could not read the chain, retrying…'; }
+    }
+
+    async function burnNow() {
+      if (!CONFIG.buyback) return;
+      if (!state.wallet) { await connect(); if (!state.wallet) return; }
+      try {
+        await ensureChain();
+        $('bb-go').disabled = true; $('bb-go').textContent = 'Burning…';
+        const params = { from: state.wallet, to: CONFIG.buyback, data: '0xf8ec6911' };
+        await rpc('eth_call', [params, 'latest']); // simulate first
+        const hash = await window.ethereum.request({ method: 'eth_sendTransaction', params: [params] });
+        for (let i = 0; i < 60; i++) { await sleep(1000); const r = await rpc('eth_getTransactionReceipt', [hash]).catch(() => null); if (r) break; }
+        toast('Buyback done. $SMART burned.');
+      } catch (e) { toast(e.code === 4001 ? 'Cancelled.' : 'Buyback not possible right now.'); }
+      $('bb-go').textContent = 'Burn now';
+      readBurns();
+    }
+
+    setup();
+    fillDocs();
+    $('burger').onclick = () => $('menu').classList.toggle('open');
+    $('bb-go').onclick = burnNow;
+    $('toc').onclick = (e) => { const t = e.target.closest('[data-h]'); if (t) { e.preventDefault(); document.getElementById(t.dataset.h).scrollIntoView({ behavior: 'smooth' }); } };
+    window.addEventListener('hashchange', route);
+    route();
+    setInterval(() => page === 'token' && !document.hidden && readBurns(), 20000);
+    cycle().then(() => { const p = new URLSearchParams(location.search).get('pool'); if (p) openPool(p); });
+    setInterval(() => !document.hidden && cycle(), 20000);
+  </script>
+</body>
+</html>

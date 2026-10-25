@@ -1,0 +1,5 @@
+node_modules/
+dist/
+contracts/build/
+*.log
+data/hooks-prev.json
