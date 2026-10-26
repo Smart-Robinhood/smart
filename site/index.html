@@ -450,7 +450,7 @@
       </div>
       <div class="wrap road">
         <article class="ph done"><span class="ph-tag">Phase 1 · Live</span><h3>Trade</h3><ul><li class="ok">Trading page for every ETH-paired v4 hook pool</li><li class="ok">Hook permissions decoded from the address</li><li class="ok">Live swaps, risk labels and verdicts</li><li class="ok">One-click swaps through the Universal Router</li><li class="ok">Simulation before every signature</li><li class="ok">Featured slots paid in burned $<span class="tkr">SMART</span></li></ul></article>
-        <article class="ph now"><span class="ph-tag">Phase 2 · Now</span><h3>Buyback</h3><ul><li class="ok">0.25% swap fee, live on-chain</li><li class="ok">Buyback &amp; burn contract: no owner, no withdraw</li><li class="ok">Live burn tracker on the Token page</li><li class="ok">Automatic buybacks inside swaps</li><li>Verified contract source on Blockscout</li></ul></article>
+        <article class="ph now"><span class="ph-tag">Phase 2 · Now</span><h3>Buyback</h3><ul><li class="ok">0.25% swap fee, live on-chain</li><li class="ok">Buyback &amp; burn contract: no owner, no withdraw</li><li class="ok">Live burn tracker on the Token page</li><li class="ok">Automatic buybacks inside swaps</li><li class="ok">Verified source code (Sourcify, exact match)</li></ul></article>
         <article class="ph"><span class="ph-tag">Phase 3 · Next</span><h3>Launch</h3><ul><li>Create a pool for any hook in one flow</li><li>Add liquidity from the pool page</li><li>Pools paired with USDG and stock tokens</li><li>Price charts on every pool page</li></ul></article>
         <article class="ph"><span class="ph-tag">Phase 4 · Later</span><h3>SmartHook</h3><ul><li>Our own v4 hook</li><li>Higher fees for bots and snipers, lower for people</li><li>Part of every hook fee buys back $<span class="tkr">SMART</span></li><li>Hook analytics API for teams</li></ul></article>
       </div>
@@ -533,7 +533,7 @@
 totalEthSpent() ETH spent on buybacks
 buybacks()      number of buybacks
 pending()       ETH waiting for the next one</div>
-          <p>Every buyback emits a <code>Buyback(caller, ethSpent, burned, onCurve)</code> event. The Token page reads these numbers live.</p>
+          <p>The source is verified on <a href="https://repo.sourcify.dev/4663/0x224a072a2906459968f0802a95636495f38d7da6" target="_blank" rel="noopener">Sourcify</a> with an exact match. Every buyback emits a <code>Buyback(caller, ethSpent, burned, onCurve)</code> event. The Token page reads these numbers live.</p>
           <h2>Tested</h2><p>The contract was simulated against live Robinhood Chain state: buying on the $<span class="tkr">SMART</span> curve, buying through a graduated Pons token's v4 pool, the minimum and the cap, a real Smart swap paying its fee into the contract, and small fees waiting for the next buyback.</p>
           <p id="doc-bb-addr"></p>
         </section>
