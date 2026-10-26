@@ -450,7 +450,7 @@
       </div>
       <div class="wrap road">
         <article class="ph done"><span class="ph-tag">Phase 1 · Live</span><h3>Trade</h3><ul><li class="ok">Trading page for every ETH-paired v4 hook pool</li><li class="ok">Hook permissions decoded from the address</li><li class="ok">Live swaps, risk labels and verdicts</li><li class="ok">One-click swaps through the Universal Router</li><li class="ok">Simulation before every signature</li><li class="ok">Featured slots paid in burned $<span class="tkr">SMART</span></li></ul></article>
-        <article class="ph now"><span class="ph-tag">Phase 2 · Now</span><h3>Buyback</h3><ul><li class="ok">0.25% swap fee, live on-chain</li><li class="ok">Buyback &amp; burn contract: no owner, no withdraw</li><li class="ok">Live burn tracker on the Token page</li><li>Automatic buybacks inside swaps</li><li>Verified contract source on Blockscout</li></ul></article>
+        <article class="ph now"><span class="ph-tag">Phase 2 · Now</span><h3>Buyback</h3><ul><li class="ok">0.25% swap fee, live on-chain</li><li class="ok">Buyback &amp; burn contract: no owner, no withdraw</li><li class="ok">Live burn tracker on the Token page</li><li class="ok">Automatic buybacks inside swaps</li><li>Verified contract source on Blockscout</li></ul></article>
         <article class="ph"><span class="ph-tag">Phase 3 · Next</span><h3>Launch</h3><ul><li>Create a pool for any hook in one flow</li><li>Add liquidity from the pool page</li><li>Pools paired with USDG and stock tokens</li><li>Price charts on every pool page</li></ul></article>
         <article class="ph"><span class="ph-tag">Phase 4 · Later</span><h3>SmartHook</h3><ul><li>Our own v4 hook</li><li>Higher fees for bots and snipers, lower for people</li><li>Part of every hook fee buys back $<span class="tkr">SMART</span></li><li>Hook analytics API for teams</li></ul></article>
       </div>
@@ -460,6 +460,7 @@
     <section class="page" data-page="changelog">
       <div class="wrap pagehead"><p class="eyebrow">Changelog</p><h1>What shipped</h1></div>
       <div class="wrap log">
+        <article class="card"><b>v0.5 · Buyback contract live</b><small>Oct 2026</small><p>SmartBuyback is deployed at <a href="https://robinhoodchain.blockscout.com/address/0x224a072a2906459968f0802a95636495f38d7da6" target="_blank" rel="noopener">0x224a…7da6</a>. Every swap fee now flows into it, and it buys back and burns $SMART on its own. No owner, no withdraw.</p></article>
         <article class="card"><b>v0.4 · Multi-page site &amp; buyback contract</b><small>Oct 2026</small><p>Token page with a live burn tracker, full documentation, roadmap, and the on-chain buyback &amp; burn contract for swap fees.</p></article>
         <article class="card"><b>v0.3 · Swap fee live</b><small>Oct 2026</small><p>0.25% of every swap is paid in ETH to the Smart treasury inside the swap transaction. <a href="https://robinhoodchain.blockscout.com/tx/0x7f40dcb504a8287dd3b06c87ad8a2d2bc1f0ff118bccd915efb20fcd725247c1" target="_blank" rel="noopener">First fee tx ↗</a></p></article>
         <article class="card"><b>v0.2 · Trade any hook pool</b><small>Oct 2026</small><p>Buy and sell in any ETH-paired Uniswap v4 pool through the official Universal Router, with simulation, slippage protection and shareable pool links.</p></article>
@@ -581,11 +582,11 @@ pending()       ETH waiting for the next one</div>
       ticker: 'SMART',
       contract: '0x0b78f8903265d93c0c156fba5c589b2d3eb2689b', // $SMART token
       curve: '0x32968c128ed2ea3d19ceb595f6133e51d7aaae72',    // its Pons bonding curve
-      buyback: '',        // SmartBuyback contract once deployed; set feeRecipient to the same address
+      buyback: '0x224a072a2906459968f0802a95636495f38d7da6', // SmartBuyback: receives the fees, buys back and burns $SMART
       x: 'https://x.com/smartonrobin',
       telegram: '',
       feeBips: 25,        // front-end fee: 25 = 0.25% of each swap
-      feeRecipient: '0xed05072eed981d163235817ce1829e1927f6289a',   // receives the fee (the buyback contract once deployed); empty = no fee is charged
+      feeRecipient: '0x224a072a2906459968f0802a95636495f38d7da6',   // receives the fee (the buyback contract once deployed); empty = no fee is charged
       minBurn: 100000,
       boostHours: 6,
       labels: {
